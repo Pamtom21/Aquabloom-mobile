@@ -7,7 +7,7 @@ Base para el [Sprint 1 móvil](https://linear.app/aquabloom/project/sprint-1-apl
 Requisitos: Git, Node 24.3.0 (.nvmrc), npm. Expo SDK 57 / React Native 0.86. La app usa TypeScript 6. El generador OpenAPI usa TypeScript 5.9 en tools/openapi para respetar sus dependencias sin alterar Expo. No instalar con --force ni --legacy-peer-deps.
 
 ```powershell
-git clone --branch setup/mobile-foundation https://github.com/Pamtom21/Aquabloom-mobile.git
+git clone https://github.com/Pamtom21/Aquabloom-mobile.git
 cd Aquabloom-mobile
 npm ci
 npm run api:setup
@@ -16,7 +16,7 @@ npm run check
 npm run web
 ```
 
-Al revisar la preparación, cambiar a la rama de su PR antes de instalar. En macOS/Linux usar cp en vez de Copy-Item. La app arranca sin credenciales y muestra configuración pendiente. Reiniciar Expo al cambiar variables.
+Para nuevas tareas, crear una rama desde main antes de comenzar. En macOS/Linux usar cp en vez de Copy-Item. La app arranca sin credenciales y muestra configuración pendiente. Reiniciar Expo al cambiar variables.
 
 ## Configuración pública
 
