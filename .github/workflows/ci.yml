@@ -1,0 +1,28 @@
+name: Mobile CI
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+    branches: [main, setup/mobile-foundation]
+permissions:
+  contents: read
+concurrency:
+  group: mobile-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    env:
+      CI: '1'
+      EXPO_NO_TELEMETRY: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm run api:setup
+      - run: npm run check
+      - run: npx expo install --check
+      - run: npm run export:android
