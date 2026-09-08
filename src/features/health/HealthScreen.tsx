@@ -21,7 +21,7 @@ export function HealthScreen() {
       {!environment.success ? (
         <AsyncState
           kind="error"
-          message="Revisa las URL de tu archivo .env.local."
+          message="Revisa las URL y la configuración pública de Supabase en .env.local."
         />
       ) : !api ? (
         <AsyncState

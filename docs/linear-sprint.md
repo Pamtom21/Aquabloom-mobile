@@ -2,6 +2,10 @@
 
 Consulta Linear: 2026-09-05. Las 48 tareas estaban en Backlog. Linear sigue siendo la fuente de estado; no se cerraron tareas automáticamente.
 
+Actualización del 8 de septiembre: las ocho tareas de la Semana 1 de José y Demian
+cuentan con [revisión técnica y evidencia](week1-jose-demian.md). Su aceptación
+final requiere revisión del PR e integración con los servicios reales.
+
 ## Orden de integración
 
 1. Revisar base y CI (AQU-5–16), validar health con API real.
