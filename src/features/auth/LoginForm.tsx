@@ -44,6 +44,7 @@ export function LoginForm({ onSubmit, onAuthenticated }: LoginFormProps) {
               Correo electrónico
             </Text>
             <TextInput
+              accessibilityLabel="Correo electrónico"
               accessibilityLabelledBy="login-email-label"
               autoCapitalize="none"
               autoComplete="email"
@@ -75,6 +76,7 @@ export function LoginForm({ onSubmit, onAuthenticated }: LoginFormProps) {
               Contraseña
             </Text>
             <TextInput
+              accessibilityLabel="Contraseña"
               accessibilityLabelledBy="login-password-label"
               autoCapitalize="none"
               autoComplete="current-password"
