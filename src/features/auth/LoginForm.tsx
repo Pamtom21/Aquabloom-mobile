@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { Button, StyleSheet, Text, TextInput, View } from 'react-native';
 import { tokens } from '../../theme/tokens';
+import { getAuthErrorMessage } from './authErrorMessage';
 import { loginSchema, type LoginCredentials } from './loginSchema';
 
 type LoginFormProps = {
@@ -27,8 +28,8 @@ export function LoginForm({ onSubmit, onAuthenticated }: LoginFormProps) {
     try {
       await onSubmit(credentials);
       onAuthenticated?.();
-    } catch {
-      setSubmissionError('No se pudo iniciar sesión. Inténtalo nuevamente.');
+    } catch (error) {
+      setSubmissionError(getAuthErrorMessage(error));
     }
   });
 
