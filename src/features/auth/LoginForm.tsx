@@ -1,4 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { Button, StyleSheet, Text, TextInput, View } from 'react-native';
 import { tokens } from '../../theme/tokens';
@@ -10,6 +11,7 @@ type LoginFormProps = {
 };
 
 export function LoginForm({ onSubmit, onAuthenticated }: LoginFormProps) {
+  const [submissionError, setSubmissionError] = useState<string | null>(null);
   const {
     control,
     handleSubmit,
@@ -21,8 +23,13 @@ export function LoginForm({ onSubmit, onAuthenticated }: LoginFormProps) {
   });
 
   const submit = handleSubmit(async (credentials) => {
-    await onSubmit(credentials);
-    onAuthenticated?.();
+    setSubmissionError(null);
+    try {
+      await onSubmit(credentials);
+      onAuthenticated?.();
+    } catch {
+      setSubmissionError('No se pudo iniciar sesión. Inténtalo nuevamente.');
+    }
   });
 
   return (
@@ -88,6 +95,12 @@ export function LoginForm({ onSubmit, onAuthenticated }: LoginFormProps) {
           </View>
         )}
       />
+
+      {submissionError && (
+        <Text accessibilityRole="alert" style={styles.error}>
+          {submissionError}
+        </Text>
+      )}
 
       <Button
         disabled={isSubmitting}

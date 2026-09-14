@@ -1,11 +1,14 @@
+import { router } from 'expo-router';
 import { Screen } from '../components/Screen';
-import { AsyncState } from '../components/AsyncState';
+import { LoginForm } from '../features/auth/LoginForm';
+import { signInWithPassword } from '../features/auth/signIn';
+
 export default function Login() {
   return (
     <Screen title="Iniciar sesión">
-      <AsyncState
-        kind="empty"
-        message="Ruta preparada para el formulario y la autenticación de AQU-17 a AQU-24."
+      <LoginForm
+        onAuthenticated={() => router.replace('/')}
+        onSubmit={signInWithPassword}
       />
     </Screen>
   );
