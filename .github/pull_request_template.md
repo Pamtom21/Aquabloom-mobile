@@ -6,8 +6,8 @@ Describir el comportamiento y cómo verificarlo.
 
 ## Validación
 
-- [ ] `npm run check`
-- [ ] `npm run export:android`
+- [ ] `pnpm run check`
+- [ ] `pnpm run export:android`
 - [ ] Evidencia en dispositivo/emulador cuando corresponda
 - [ ] Sin secretos ni archivos .env
 - [ ] Revisión de otro integrante
