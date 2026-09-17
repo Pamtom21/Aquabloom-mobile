@@ -31,20 +31,48 @@ export function createHttpClient(
       headers.set('Content-Type', 'application/json');
     const token = await getToken();
     if (token) headers.set('Authorization', `Bearer ${token}`);
-    const response = await fetcher(`${baseUrl.replace(/\/$/, '')}${path}`, {
-      ...init,
-      headers,
-      signal: init.signal ?? AbortSignal.timeout(15000),
-    });
-    if (!response.ok) {
-      throw new ApiError(
-        response.status,
-        response.status === 401
-          ? 'Tu sesión venció. Inicia sesión nuevamente.'
-          : `No se pudo completar la solicitud (${response.status}).`,
-      );
+    // A caller's cancellation must not disable the request deadline.
+    const controller = new AbortController();
+    const cancel = () => controller.abort();
+    init.signal?.addEventListener('abort', cancel, { once: true });
+    if (init.signal?.aborted) cancel();
+    let timedOut = false;
+    const timeout = setTimeout(() => {
+      timedOut = true;
+      controller.abort();
+    }, 15000);
+    try {
+      const response = await fetcher(`${baseUrl.replace(/\/$/, '')}${path}`, {
+        ...init,
+        headers,
+        signal: controller.signal,
+      });
+      if (!response.ok) {
+        throw new ApiError(
+          response.status,
+          response.status === 401
+            ? 'Tu sesión venció. Inicia sesión nuevamente.'
+            : `No se pudo completar la solicitud (${response.status}).`,
+        );
+      }
+      if (response.status === 204) return undefined as T;
+      try {
+        return (await response.json()) as T;
+      } catch (error) {
+        if (controller.signal.aborted) throw error;
+        throw new ApiError(
+          response.status,
+          'La API devolvió una respuesta JSON inválida.',
+        );
+      }
+    } catch (error) {
+      if (init.signal?.aborted) throw error;
+      if (timedOut) throw new Error('La API tardó demasiado en responder.');
+      if (error instanceof ApiError) throw error;
+      throw new Error('No se pudo conectar con la API. Revisa tu conexión.');
+    } finally {
+      clearTimeout(timeout);
+      init.signal?.removeEventListener('abort', cancel);
     }
-    if (response.status === 204) return undefined as T;
-    return (await response.json()) as T;
   };
 }

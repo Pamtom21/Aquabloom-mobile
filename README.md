@@ -2,6 +2,9 @@
 
 Base para el [Sprint 1 móvil](https://linear.app/aquabloom/project/sprint-1-aplicacion-movil-350f4a4a4115): Demian, Jose y Franco.
 
+La implementación y evidencia de las ocho tareas de José y Demian de la primera
+semana están en [Semana 1 — José y Demian](docs/week1-jose-demian.md).
+
 ## Comenzar
 
 Requisitos: Git, Node 24.3.0 (.nvmrc), npm. Expo SDK 57 / React Native 0.86. La app usa TypeScript 6. El generador OpenAPI usa TypeScript 5.9 en tools/openapi para respetar sus dependencias sin alterar Expo. No instalar con --force ni --legacy-peer-deps.
@@ -27,6 +30,11 @@ Para nuevas tareas, crear una rama desde main antes de comenzar. En macOS/Linux 
 | EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY | Clave publishable (o anon pública heredada)                                       |
 
 En teléfono usar URL HTTPS accesible o IP LAN del equipo; localhost apunta al teléfono. El navegador requiere CORS en FastAPI. Nunca incorporar service_role, claves privadas ni contraseñas: EXPO_PUBLIC se incluye en el paquete público.
+
+Las URL base no deben incluir credenciales, parámetros ni fragmentos. Dejar ambas
+variables Supabase vacías para arrancar sin ese servicio, o configurar las dos;
+una configuración parcial muestra un error de configuración. El cliente HTTP
+mantiene un límite de 15 segundos incluso en consultas cancelables.
 
 El cliente agrega /health (AQU-59) y trata el cuerpo como unknown hasta recibir OpenAPI real. API disponible significa HTTP exitoso con JSON. Supabase se crea al configurar ambas variables. La sesión permanece en memoria: SecureStore, refresh, AuthProvider y protección siguen pendientes en AQU-17–19. Las rutas iniciales no contienen datos privados.
 
