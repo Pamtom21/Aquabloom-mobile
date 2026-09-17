@@ -56,7 +56,9 @@ describe('CatalogScreen', () => {
 
     await fireEvent.changeText(view.getByLabelText('Nombre del lago'), 'Ranco');
     await fireEvent.changeText(view.getByLabelText('Región'), 'Los Ríos');
-    await fireEvent.press(view.getByRole('button', { name: 'Aplicar filtros' }));
+    await fireEvent.press(
+      view.getByRole('button', { name: 'Aplicar filtros' }),
+    );
 
     expect(mockedUseLakes).toHaveBeenLastCalledWith({
       search: 'Ranco',

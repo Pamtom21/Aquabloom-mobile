@@ -3,6 +3,7 @@ node_modules
 dist
 coverage
 package-lock.json
+pnpm-lock.yaml
 android
 ios
 src/types/api.generated.ts
