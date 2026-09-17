@@ -10,19 +10,35 @@ import {
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { ApiError } from '../lib/http';
 
+export const queryCachePolicy = {
+  staleTime: 60_000,
+  gcTime: 5 * 60_000,
+  maxRetries: 2,
+} as const;
+
+export function shouldRetryQuery(failureCount: number, error: unknown) {
+  if (error instanceof Error && error.name === 'AbortError') return false;
+  if (error instanceof ApiError && error.status < 500) return false;
+  return failureCount < queryCachePolicy.maxRetries;
+}
+
+export function createAppQueryClient() {
+  return new QueryClient({
+    defaultOptions: {
+      queries: {
+        staleTime: queryCachePolicy.staleTime,
+        gcTime: queryCachePolicy.gcTime,
+        retry: shouldRetryQuery,
+        refetchOnReconnect: true,
+        refetchOnWindowFocus: true,
+      },
+      mutations: { retry: false },
+    },
+  });
+}
+
 export function AppProviders({ children }: PropsWithChildren) {
-  const [client] = useState(
-    () =>
-      new QueryClient({
-        defaultOptions: {
-          queries: {
-            staleTime: 60000,
-            retry: (count, error) =>
-              !(error instanceof ApiError && error.status < 500) && count < 2,
-          },
-        },
-      }),
-  );
+  const [client] = useState(createAppQueryClient);
   useEffect(() => {
     const unsubscribe = NetInfo.addEventListener((state) => {
       onlineManager.setOnline(
