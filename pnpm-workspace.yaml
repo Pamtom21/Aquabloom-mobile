@@ -1,2 +1,4 @@
 packages:
   - tools/openapi
+allowBuilds:
+  unrs-resolver: false
