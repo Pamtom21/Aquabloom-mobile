@@ -1,11 +1,12 @@
 import { useEffect, useState, type PropsWithChildren } from 'react';
-import { AppState, Platform } from 'react-native';
+import { AppState, Platform, StyleSheet, View } from 'react-native';
 import {
   focusManager,
   QueryClient,
   QueryClientProvider,
 } from '@tanstack/react-query';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { ConnectivityBanner } from '../features/connectivity/ConnectivityBanner';
 import { ApiError } from '../lib/http';
 import { ConnectivityProvider } from './ConnectivityProvider';
 
@@ -47,8 +48,18 @@ export function AppProviders({ children }: PropsWithChildren) {
   return (
     <SafeAreaProvider>
       <QueryClientProvider client={client}>
-        <ConnectivityProvider>{children}</ConnectivityProvider>
+        <ConnectivityProvider>
+          <View style={styles.application}>
+            <ConnectivityBanner />
+            <View style={styles.content}>{children}</View>
+          </View>
+        </ConnectivityProvider>
       </QueryClientProvider>
     </SafeAreaProvider>
   );
 }
+
+const styles = StyleSheet.create({
+  application: { flex: 1 },
+  content: { flex: 1 },
+});
