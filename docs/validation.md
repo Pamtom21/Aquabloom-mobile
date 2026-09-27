@@ -1,14 +1,23 @@
-# Verificación de la base — 2026-09-05
+# Verificación acumulada — 2026-09-27
 
+- Gestor reproducible: pnpm 11.5.0 con `pnpm-lock.yaml`; instalación congelada
+  documentada.
 - Formato, ESLint y TypeScript: aprobados.
-- Jest: 3 suites, 8 pruebas aprobadas (HTTP, entorno, estados de UI y reintento).
-- Expo: 21/21 comprobaciones aprobadas; dependencias alineadas al SDK 57.
-- Prebuild Android: configuración nativa y plugins generados correctamente; SDK/dispositivo pendientes.
-- Bundle JavaScript Android: exportado; no equivale a APK instalado.
-- Navegador: inicio sin variables y navegación a catálogo comprobados.
-- npm audit: 14 avisos moderados transitivos, 0 altos y 0 críticos. Origen: decode-uri-component <=0.4.2 y uuid <11.1.1. No se aplicó audit fix --force porque propone degradar Expo/Router a versiones incompatibles. Revisar con las siguientes actualizaciones del SDK.
-- Generador OpenAPI aislado: 0 vulnerabilidades; el contrato de negocio real sigue pendiente.
+- Jest: 18 suites y 65 pruebas aprobadas.
+- Expo Doctor: 21/21 comprobaciones aprobadas con SDK 57.0.25 y Router 57.0.23.
+- Bundle JavaScript Android: 1.471 módulos, 27 assets y bundle Hermes de 4,4 MB
+  exportados correctamente.
+- OpenAPI: contrato versionado y tipos del catálogo generados en el repositorio.
+- Accesibilidad: controles táctiles, estados asíncronos, formulario y tarjetas
+  cubiertos mediante consultas semánticas.
+- Responsive: breakpoints de teléfono/tablet y texto ampliado cubiertos por
+  pruebas unitarias.
+- Conectividad: clasificación NetInfo, coordinación de React Query y banner
+  global cubiertos por pruebas de transición.
 
-Pendientes: Supabase/API reales, OpenAPI, mapa nativo, persistencia/offline/auth de negocio, E2E, build e instalación Android. No se certifica ninguna tarea futura por tener la dependencia instalada.
+La exportación Android no equivale a un APK instalado. La compilación nativa y
+la prueba manual con TalkBack/VoiceOver necesitan un dispositivo o emulador,
+Android SDK/adb y un development build para MapLibre.
 
-La plantilla MIT de Expo se conserva con su atribución original. No se modificaron asignaciones ni estados de Linear.
+Las credenciales reales de Supabase/API, claves de firma y secretos EAS no se
+incluyen en el repositorio. `.env.local` permanece fuera de Git.
