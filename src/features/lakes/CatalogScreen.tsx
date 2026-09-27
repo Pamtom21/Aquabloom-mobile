@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import {
   ActivityIndicator,
-  Pressable,
   StyleSheet,
   Text,
   TextInput,
   View,
 } from 'react-native';
+import { AppButton } from '../../components/AppButton';
 import { AsyncState } from '../../components/AsyncState';
 import { Screen } from '../../components/Screen';
 import { tokens } from '../../theme/tokens';
@@ -50,6 +50,7 @@ export function CatalogScreen() {
         <Text style={styles.sectionTitle}>Buscar en el catálogo</Text>
         <TextInput
           accessibilityLabel="Nombre del lago"
+          accessibilityHint="Filtra el catálogo por nombre"
           autoCapitalize="words"
           onChangeText={setSearch}
           onSubmitEditing={applyFilters}
@@ -60,6 +61,7 @@ export function CatalogScreen() {
         />
         <TextInput
           accessibilityLabel="Región"
+          accessibilityHint="Filtra el catálogo por región"
           autoCapitalize="words"
           onChangeText={setRegion}
           onSubmitEditing={applyFilters}
@@ -69,27 +71,11 @@ export function CatalogScreen() {
           value={region}
         />
         <View style={styles.actions}>
-          <Pressable
-            accessibilityRole="button"
-            onPress={applyFilters}
-            style={({ pressed }) => [
-              styles.primaryButton,
-              pressed && styles.pressed,
-            ]}
-          >
-            <Text style={styles.primaryButtonText}>Aplicar filtros</Text>
-          </Pressable>
+          <AppButton onPress={applyFilters}>Aplicar filtros</AppButton>
           {hasFilters ? (
-            <Pressable
-              accessibilityRole="button"
-              onPress={clearFilters}
-              style={({ pressed }) => [
-                styles.secondaryButton,
-                pressed && styles.pressed,
-              ]}
-            >
-              <Text style={styles.secondaryButtonText}>Limpiar</Text>
-            </Pressable>
+            <AppButton onPress={clearFilters} variant="secondary">
+              Limpiar
+            </AppButton>
           ) : null}
         </View>
       </View>
@@ -154,24 +140,6 @@ const styles = StyleSheet.create({
     color: tokens.colors.text,
   },
   actions: { flexDirection: 'row', flexWrap: 'wrap', gap: tokens.spacing.sm },
-  primaryButton: {
-    minHeight: 44,
-    justifyContent: 'center',
-    paddingHorizontal: tokens.spacing.md,
-    borderRadius: tokens.radius,
-    backgroundColor: tokens.colors.primary,
-  },
-  primaryButtonText: { color: tokens.colors.surface, fontWeight: '700' },
-  secondaryButton: {
-    minHeight: 44,
-    justifyContent: 'center',
-    paddingHorizontal: tokens.spacing.md,
-    borderWidth: 1,
-    borderColor: tokens.colors.primary,
-    borderRadius: tokens.radius,
-  },
-  secondaryButtonText: { color: tokens.colors.primary, fontWeight: '700' },
-  pressed: { opacity: 0.72 },
   results: { gap: tokens.spacing.md },
   resultsHeading: {
     flexDirection: 'row',

@@ -1,7 +1,8 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { Button, StyleSheet, Text, TextInput, View } from 'react-native';
+import { StyleSheet, Text, TextInput, View } from 'react-native';
+import { AppButton } from '../../components/AppButton';
 import { tokens } from '../../theme/tokens';
 import { getAuthErrorMessage } from './authErrorMessage';
 import { loginSchema, type LoginCredentials } from './loginSchema';
@@ -46,6 +47,8 @@ export function LoginForm({ onSubmit, onAuthenticated }: LoginFormProps) {
             <TextInput
               accessibilityLabel="Correo electrónico"
               accessibilityLabelledBy="login-email-label"
+              accessibilityState={{ disabled: isSubmitting }}
+              aria-invalid={Boolean(fieldState.error)}
               autoCapitalize="none"
               autoComplete="email"
               autoCorrect={false}
@@ -78,6 +81,8 @@ export function LoginForm({ onSubmit, onAuthenticated }: LoginFormProps) {
             <TextInput
               accessibilityLabel="Contraseña"
               accessibilityLabelledBy="login-password-label"
+              accessibilityState={{ disabled: isSubmitting }}
+              aria-invalid={Boolean(fieldState.error)}
               autoCapitalize="none"
               autoComplete="current-password"
               editable={!isSubmitting}
@@ -105,11 +110,13 @@ export function LoginForm({ onSubmit, onAuthenticated }: LoginFormProps) {
         </Text>
       )}
 
-      <Button
+      <AppButton
+        accessibilityHint="Envía tus credenciales para acceder a AquaBloom"
         disabled={isSubmitting}
         onPress={() => void submit()}
-        title={isSubmitting ? 'Iniciando sesión…' : 'Iniciar sesión'}
-      />
+      >
+        {isSubmitting ? 'Iniciando sesión…' : 'Iniciar sesión'}
+      </AppButton>
     </View>
   );
 }

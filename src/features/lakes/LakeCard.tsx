@@ -5,11 +5,12 @@ import type { Lake } from './types';
 
 export function LakeCard({ lake }: { lake: Lake }) {
   const location = [lake.commune, lake.region].filter(Boolean).join(', ');
+  const accessibleLocation = location ? `, ${location}` : '';
 
   return (
     <Pressable
       accessibilityHint="Abre la ficha completa del lago"
-      accessibilityLabel={`Ver detalle de ${lake.name}, ${location}`}
+      accessibilityLabel={`Ver detalle de ${lake.name}${accessibleLocation}`}
       accessibilityRole="button"
       onPress={() =>
         router.push({ pathname: '/lakes/[id]', params: { id: lake.id } })
@@ -18,7 +19,14 @@ export function LakeCard({ lake }: { lake: Lake }) {
     >
       <View style={styles.headingRow}>
         <Text style={styles.name}>{lake.name}</Text>
-        {lake.status ? <Text style={styles.status}>{lake.status}</Text> : null}
+        {lake.status ? (
+          <Text
+            accessibilityLabel={`Estado: ${lake.status}`}
+            style={styles.status}
+          >
+            {lake.status}
+          </Text>
+        ) : null}
       </View>
       <Text style={styles.location}>{location}</Text>
       {lake.description ? (
@@ -26,7 +34,9 @@ export function LakeCard({ lake }: { lake: Lake }) {
           {lake.description}
         </Text>
       ) : null}
-      <Text style={styles.action}>Ver detalle →</Text>
+      <Text accessibilityElementsHidden importantForAccessibility="no">
+        <Text style={styles.action}>Ver detalle →</Text>
+      </Text>
     </Pressable>
   );
 }
