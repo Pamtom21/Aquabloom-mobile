@@ -9,6 +9,7 @@ import {
 } from '@tanstack/react-query';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { ApiError } from '../lib/http';
+import { AuthProvider } from '../features/auth/AuthProvider';
 
 export const queryCachePolicy = {
   staleTime: 60_000,
@@ -55,7 +56,9 @@ export function AppProviders({ children }: PropsWithChildren) {
   }, []);
   return (
     <SafeAreaProvider>
-      <QueryClientProvider client={client}>{children}</QueryClientProvider>
+      <QueryClientProvider client={client}>
+        <AuthProvider>{children}</AuthProvider>
+      </QueryClientProvider>
     </SafeAreaProvider>
   );
 }
