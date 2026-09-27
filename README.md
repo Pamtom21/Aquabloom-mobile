@@ -1,90 +1,189 @@
 # AquaBloom Mobile
 
-Base para el [Sprint 1 móvil](https://linear.app/aquabloom/project/sprint-1-aplicacion-movil-350f4a4a4115): Demian, Jose y Franco.
+Aplicación móvil de AquaBloom Sur construida con Expo SDK 57, React Native 0.86,
+Expo Router y TypeScript estricto. El Sprint 1 cubre autenticación, catálogo,
+mapa, detalle de lagos, comportamiento offline y preparación Android.
 
-La implementación y evidencia de las ocho tareas de José y Demian de la primera
-semana están en [Semana 1 — José y Demian](docs/week1-jose-demian.md).
+## Requisitos exactos
 
-## Comenzar
+- Git.
+- Node.js 24.3.x. La versión esperada está en `.nvmrc`.
+- pnpm 11.5.0. El repositorio declara esta versión en `packageManager`.
+- Para desarrollo nativo: Android Studio, Android SDK 36, JDK 21 y un
+  emulador o dispositivo con depuración habilitada.
 
-Requisitos: Git, Node 24.3.0 (.nvmrc) y pnpm 11.5.0. Expo SDK 57 / React Native 0.86. La app usa TypeScript 6. El generador OpenAPI usa TypeScript 5.9 en tools/openapi para respetar sus dependencias sin alterar Expo. No instalar con --force.
+Comprueba las herramientas antes de instalar:
 
-```powershell
+```sh
+node --version
+pnpm --version
+git --version
+```
+
+Si pnpm no está disponible y la instalación de Node incluye Corepack:
+
+```sh
+corepack enable
+corepack install --global pnpm@11.5.0
+```
+
+No mezcles gestores de paquetes. `pnpm-lock.yaml` es la única fuente de
+resolución reproducible del proyecto.
+
+## Instalación limpia
+
+```sh
 git clone https://github.com/Pamtom21/Aquabloom-mobile.git
 cd Aquabloom-mobile
 pnpm install --frozen-lockfile
 pnpm run api:setup
-Copy-Item .env.example .env.local
-pnpm run check
-pnpm run web
 ```
 
-Para nuevas tareas, crear una rama desde main antes de comenzar. En macOS/Linux usar cp en vez de Copy-Item. La app arranca sin credenciales y muestra configuración pendiente. Reiniciar Expo al cambiar variables.
+Después crea el archivo local de entorno. En PowerShell:
+
+```powershell
+Copy-Item .env.example .env.local
+```
+
+En macOS o Linux:
+
+```sh
+cp .env.example .env.local
+```
+
+La app puede iniciar sin credenciales: mostrará un estado de configuración
+pendiente en vez de fallar durante el arranque.
 
 ## Configuración pública
 
-| Variable                             | Valor                                                                             |
-| ------------------------------------ | --------------------------------------------------------------------------------- |
-| EXPO_PUBLIC_API_URL                  | URL con prefijo FastAPI, p. ej. http://10.0.2.2:8000/api/v1 para emulador Android |
-| EXPO_PUBLIC_SUPABASE_URL             | URL del proyecto Supabase                                                         |
-| EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY | Clave publishable (o anon pública heredada)                                       |
+Completa `.env.local` sólo con valores públicos:
 
-En teléfono usar URL HTTPS accesible o IP LAN del equipo; localhost apunta al teléfono. El navegador requiere CORS en FastAPI. Nunca incorporar service_role, claves privadas ni contraseñas: EXPO_PUBLIC se incluye en el paquete público.
+| Variable                               | Obligatoria | Ejemplo / propósito                                                                   |
+| -------------------------------------- | ----------- | ------------------------------------------------------------------------------------- |
+| `EXPO_PUBLIC_API_URL`                  | No          | `http://10.0.2.2:8000/api/v1` para FastAPI desde el emulador Android                  |
+| `EXPO_PUBLIC_SUPABASE_URL`             | En pareja   | URL HTTPS del proyecto Supabase                                                       |
+| `EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | En pareja   | Clave publicable (o anon pública heredada); nunca `service_role` ni una clave privada |
 
-Las URL base no deben incluir credenciales, parámetros ni fragmentos. Dejar ambas
-variables Supabase vacías para arrancar sin ese servicio, o configurar las dos;
-una configuración parcial muestra un error de configuración. El cliente HTTP
-mantiene un límite de 15 segundos incluso en consultas cancelables.
+Las variables `EXPO_PUBLIC_*` quedan incluidas en el bundle y no sirven para
+guardar secretos. Las URL base no aceptan credenciales, query strings ni
+fragmentos. Supabase debe configurarse con ambos valores o dejarse completamente
+vacío. Reinicia Metro después de editar `.env.local`.
 
-El cliente agrega /health (AQU-59) y trata el cuerpo como unknown hasta recibir OpenAPI real. API disponible significa HTTP exitoso con JSON. Supabase se crea al configurar ambas variables. La sesión permanece en memoria: SecureStore, refresh, AuthProvider y protección siguen pendientes en AQU-17–19. Las rutas iniciales no contienen datos privados.
+En un teléfono físico, `localhost` apunta al teléfono. Usa HTTPS o la IP LAN del
+equipo que ejecuta FastAPI. En web, el backend también debe permitir el origen de
+Expo mediante CORS.
 
-## Comandos
+## Verificación antes de desarrollar
 
-| Comando                                           | Uso                                   |
-| ------------------------------------------------- | ------------------------------------- |
-| pnpm run web                                      | Navegación y estados en navegador     |
-| pnpm start                                        | Servidor para development build       |
-| pnpm run android                                  | Abrir development build instalado     |
-| pnpm run android:build                            | Compilación local con Android SDK/JDK |
-| pnpm run check                                    | Formato, lint, TypeScript y pruebas   |
-| pnpm run export:android                           | Bundle JS Android; no genera APK      |
-| pnpm run doctor                                   | Diagnóstico Expo                      |
-| pnpm run api:generate -- ./contracts/openapi.json | Tipos desde el contrato versionado    |
-
-## Android y EAS
-
-MapLibre está instalado con plugin; el mapa se implementa en AQU-29–32. No funciona en Expo Go: necesita development build ([MapLibre](https://maplibre.org/maplibre-react-native/docs/setup/expo/)). Compilar localmente requiere Android Studio, SDK 36, emulador/dispositivo y JDK compatible con Expo/Gradle. En este equipo se detectó Java 21; no adb ni ANDROID_HOME. No se ha verificado compilación nativa ni instalación.
-
-Iniciar sesión en EAS y ejecutar `pnpm dlx eas-cli@latest init` seleccionando el proyecto del equipo para obtener projectId real. Confirmar el identificador provisional `com.aquabloom.mobile` antes de distribuir y configurar las variables públicas en EAS.
+Ejecuta el mismo control de calidad usado por integración continua:
 
 ```sh
-pnpm dlx eas-cli@latest build --platform android --profile development
-# Instalar APK y después:
+pnpm run check
+pnpm run doctor
+pnpm run export:android
+```
+
+`check` valida formato, ESLint, TypeScript y Jest. `doctor` revisa compatibilidad
+con Expo SDK 57. `export:android` genera el bundle JavaScript de Android, no un
+APK. Ninguno de estos pasos necesita secretos.
+
+Para iniciar el proyecto:
+
+```sh
+pnpm run web
+```
+
+El flujo nativo usa un development build porque MapLibre contiene código nativo
+y no funciona dentro de Expo Go:
+
+```sh
+pnpm run android:build
 pnpm start
 ```
 
-development/preview generan APK; production, AAB. No se lanzó build remoto ni se crearon claves de firma.
+## Comandos disponibles
 
-## Estructura y equipo
+| Comando                                             | Resultado                                                      |
+| --------------------------------------------------- | -------------------------------------------------------------- |
+| `pnpm run web`                                      | Inicia Expo para navegador                                     |
+| `pnpm start`                                        | Inicia Metro para un development build                         |
+| `pnpm run android`                                  | Abre el development build Android ya instalado                 |
+| `pnpm run android:build`                            | Compila e instala localmente con Android SDK/JDK               |
+| `pnpm run check`                                    | Ejecuta formato, lint, tipos y pruebas                         |
+| `pnpm run test`                                     | Ejecuta Jest una vez                                           |
+| `pnpm run test:watch`                               | Ejecuta Jest en modo interactivo                               |
+| `pnpm run doctor`                                   | Comprueba dependencias y configuración Expo                    |
+| `pnpm run export:android`                           | Empaqueta JavaScript y assets para Android                     |
+| `pnpm run api:setup`                                | Instala el workspace aislado del generador OpenAPI             |
+| `pnpm run api:generate -- ./contracts/openapi.json` | Regenera `src/types/api.generated.ts` desde el contrato fijado |
 
-- src/app: rutas; mantener lógica de negocio en features.
-- src/features: módulos por funcionalidad, con health como ejemplo.
-- src/lib: HTTP, API, Supabase.
-- src/providers: QueryClient, conectividad y foco.
-- src/components y src/theme: componentes y tokens.
-- scripts y contracts: generación OpenAPI.
-- docs/linear-sprint.md: 48 tareas, responsables y dependencias.
+## Arquitectura
 
-Rama sugerida: feat/aqu-17-secure-session. Un PR por unidad revisable, enlazar Linear, añadir evidencia y pedir revisión de otro integrante. CI ejecuta check, compatibilidad Expo y export Android. El workflow no configura protección de main; se puede exigir Mobile CI / quality y una aprobación desde GitHub.
+```text
+src/app/             rutas y layouts de Expo Router
+src/components/      primitivas visuales compartidas
+src/config/          lectura y validación del entorno público
+src/features/        autenticación, catálogo, conectividad y módulos de dominio
+src/lib/             clientes HTTP, API y Supabase
+src/providers/       QueryClient, ciclo de vida y estado global de red
+src/theme/           tokens y reglas responsive
+contracts/           OpenAPI versionado
+scripts/             generación de código
+tools/openapi/       workspace del generador con dependencias aisladas
+docs/                alcance, evidencia y decisiones del sprint
+```
 
-## Integraciones pendientes
+El cliente HTTP añade el prefijo configurado, cancela solicitudes y aplica un
+límite de 15 segundos. React Query comparte políticas de caché y reintento. El
+estado global de conectividad pausa consultas al quedar offline y presenta un
+banner accesible hasta recuperar internet. El catálogo consume tipos generados
+desde `contracts/openapi.json`.
 
-El contrato móvil inicial está versionado en `contracts/openapi.json` y genera los tipos consumidos por el catálogo. El equipo Web/API debe alinear su `/openapi.json` con esta operación o reemplazar el archivo y regenerar los tipos antes de integrar el backend. Aún se deben acordar GeoJSON, errores, roles y semillas.
+## Android y EAS
 
-SQLite y SecureStore están instalados; migraciones, caché por usuario/organización, TTL, fallback offline y limpieza al salir se implementan en sus tareas. Para AQU-41, implementar E2E después del login y detalle con cuentas de prueba. Las pruebas iniciales cubren HTTP/configuración, no certifican auth, mapas ni offline.
+Confirma el identificador `com.aquabloom.mobile` antes de distribuir. Para
+compilaciones remotas, inicia sesión en EAS, vincula el proyecto del equipo y
+configura allí las mismas variables públicas:
+
+```sh
+pnpm dlx eas-cli@latest init
+pnpm dlx eas-cli@latest build --platform android --profile development
+```
+
+Los perfiles `development` y `preview` generan APK; `production` genera AAB. No
+versiones credenciales, archivos de firma ni tokens de EAS.
+
+## Diagnóstico rápido
+
+- **`Unsupported engine`**: activa Node 24.3.x y repite `pnpm install`.
+- **Lockfile desactualizado**: no lo ignores; sincroniza la rama y ejecuta la
+  instalación con pnpm para resolver el conflicto de forma explícita.
+- **Variables nuevas no aparecen**: detén Metro y vuelve a iniciarlo.
+- **La API funciona en PC pero no en Android**: usa `10.0.2.2` en el emulador o
+  una IP LAN accesible desde el teléfono.
+- **Error CORS en web**: autoriza el origen mostrado por Expo en FastAPI.
+- **Mapa ausente en Expo Go**: instala un development build; MapLibre requiere
+  módulos nativos.
+- **Banner “Sin conexión”**: verifica acceso real a internet; una red Wi-Fi sin
+  salida también se considera offline.
+- **Falla la generación OpenAPI**: ejecuta `pnpm run api:setup` y confirma que el
+  contrato sea JSON OpenAPI válido antes de regenerar.
+
+## Flujo de contribución
+
+1. Sincroniza `main` y crea una rama enfocada.
+2. Implementa una unidad revisable y agrega pruebas observables.
+3. Ejecuta `pnpm run check`, `pnpm run doctor` y `pnpm run export:android`.
+4. No agregues secretos ni artefactos generados fuera de los declarados.
+5. Abre un pull request, enlaza los tickets de Linear y solicita revisión.
+
+El CI repite los controles locales en cada pull request. La evidencia del Sprint
+1 y la asignación de sus 48 tareas están en [`docs/linear-sprint.md`](docs/linear-sprint.md).
 
 ## Referencias
 
 - [Expo SDK 57](https://docs.expo.dev/versions/v57.0.0/)
+- [NetInfo para Expo SDK 57](https://docs.expo.dev/versions/v57.0.0/sdk/netinfo/)
+- [Accesibilidad en React Native](https://reactnative.dev/docs/accessibility)
 - [Supabase React Native](https://supabase.com/docs/guides/auth/quickstarts/react-native)
-- [MapLibre Expo](https://maplibre.org/maplibre-react-native/docs/setup/expo/)
+- [MapLibre con Expo](https://maplibre.org/maplibre-react-native/docs/setup/expo/)
