@@ -5,6 +5,9 @@ Base para el [Sprint 1 móvil](https://linear.app/aquabloom/project/sprint-1-apl
 La implementación y evidencia de las ocho tareas de José y Demian de la primera
 semana están en [Semana 1 — José y Demian](docs/week1-jose-demian.md).
 
+La entrega de perfil, usuario actual, cierre de sesión y pruebas de José
+(AQU-25–28) está documentada en [Autenticación de José](docs/jose-auth-delivery.md).
+
 ## Comenzar
 
 Requisitos: Git, Node 24.3.0 (.nvmrc) y pnpm 11.5.0. Expo SDK 57 / React Native 0.86. La app usa TypeScript 6. El generador OpenAPI usa TypeScript 5.9 en tools/openapi para respetar sus dependencias sin alterar Expo. No instalar con --force.
@@ -36,7 +39,7 @@ variables Supabase vacías para arrancar sin ese servicio, o configurar las dos;
 una configuración parcial muestra un error de configuración. El cliente HTTP
 mantiene un límite de 15 segundos incluso en consultas cancelables.
 
-El cliente agrega /health (AQU-59) y trata el cuerpo como unknown hasta recibir OpenAPI real. API disponible significa HTTP exitoso con JSON. Supabase se crea al configurar ambas variables. La sesión permanece en memoria: SecureStore, refresh, AuthProvider y protección siguen pendientes en AQU-17–19. Las rutas iniciales no contienen datos privados.
+El cliente agrega /health (AQU-59) y trata el cuerpo como unknown hasta recibir OpenAPI real. API disponible significa HTTP exitoso con JSON. Supabase se crea al configurar ambas variables. AuthProvider sincroniza el usuario actual con Supabase y el perfil muestra datos solo con sesión. El cierre afecta a la sesión actual y limpia TanStack Query. La sesión permanece en memoria: SecureStore, refresh por AppState y protección general de rutas siguen pendientes en AQU-17–19. El perfil controla su propio acceso; los permisos de la API deben validarse en el servidor.
 
 ## Comandos
 
@@ -81,7 +84,7 @@ Rama sugerida: feat/aqu-17-secure-session. Un PR por unidad revisable, enlazar L
 
 El contrato móvil inicial está versionado en `contracts/openapi.json` y genera los tipos consumidos por el catálogo. El equipo Web/API debe alinear su `/openapi.json` con esta operación o reemplazar el archivo y regenerar los tipos antes de integrar el backend. Aún se deben acordar GeoJSON, errores, roles y semillas.
 
-SQLite y SecureStore están instalados; migraciones, caché por usuario/organización, TTL, fallback offline y limpieza al salir se implementan en sus tareas. Para AQU-41, implementar E2E después del login y detalle con cuentas de prueba. Las pruebas iniciales cubren HTTP/configuración, no certifican auth, mapas ni offline.
+SQLite y SecureStore están instalados; migraciones, caché persistente por usuario/organización, TTL y fallback offline siguen pendientes. Cuando se active SQLite, su limpieza debe integrarse al cierre de sesión y a los cambios de identidad. Las pruebas de autenticación integran el SDK real de Supabase con HTTP simulado; no certifican el servicio remoto. Para AQU-41, implementar E2E después del detalle con cuentas de prueba. Mapas, offline y verificación en dispositivo siguen pendientes.
 
 ## Referencias
 
