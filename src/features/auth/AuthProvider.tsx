@@ -86,8 +86,8 @@ export function AuthProvider({
     let active = true;
     let revision = 0;
     let identity: string | null | undefined;
-    queryClient.clear();
     if (!client) return;
+    queryClient.clear();
 
     const applySession = (session: Session | null) => {
       if (!active) return;

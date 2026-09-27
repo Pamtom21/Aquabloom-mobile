@@ -1,6 +1,10 @@
 import { act, fireEvent, render, screen } from '@testing-library/react-native';
 import { Text } from 'react-native';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import {
+  QueryClient,
+  QueryClientProvider,
+  useQuery,
+} from '@tanstack/react-query';
 import { AuthProvider, useCurrentUser, type AuthClient } from '../AuthProvider';
 import { authFixture, sessionFor } from './authFixture';
 
@@ -37,6 +41,27 @@ it('loads the current user and updates their profile on auth events', async () =
 it('starts without configuration and does not call Supabase', async () => {
   await mount(null);
   expect(screen.getByText('unconfigured')).toBeTruthy();
+});
+
+it('does not cancel public queries when Supabase is unconfigured', async () => {
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { gcTime: 0 } },
+  });
+  function PublicContent() {
+    const query = useQuery({
+      queryKey: ['public'],
+      queryFn: async () => 'API disponible',
+    });
+    return <Text>{query.data ?? 'Cargando'}</Text>;
+  }
+  await render(
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider client={null}>
+        <PublicContent />
+      </AuthProvider>
+    </QueryClientProvider>,
+  );
+  expect(await screen.findByText('API disponible')).toBeTruthy();
 });
 
 it('keeps a newer auth event when the initial read resolves late', async () => {
