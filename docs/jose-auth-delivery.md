@@ -2,6 +2,11 @@
 
 Fecha: 27 de septiembre de 2026.
 
+Este informe registra la entrega de autenticación. Las tareas que al redactarlo
+quedaron pendientes se implementan después en [Catálogo](catalog-delivery.md)
+y [Caché y modo sin conexión](offline-delivery.md). La limpieza de caché de la
+última rama también incluye SQLite.
+
 Repositorio: [Pamtom21/Aquabloom-mobile](https://github.com/Pamtom21/Aquabloom-mobile).
 Base: `695c2eb` de `main`. Rama local: `feat/jose-auth-profile`.
 

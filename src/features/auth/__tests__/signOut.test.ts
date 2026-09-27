@@ -2,8 +2,38 @@ import { QueryClient } from '@tanstack/react-query';
 import { AuthError } from '@supabase/supabase-js';
 import { signOutAndClearCache } from '../signOut';
 import { authFixture } from './authFixture';
+import * as persistentCache from '../../offline/catalogCache';
 
 jest.mock('../../../lib/supabase', () => ({ supabase: null }));
+
+afterEach(() => jest.restoreAllMocks());
+
+it('removes persisted responses before closing the session', async () => {
+  const clear = jest
+    .spyOn(persistentCache, 'clearCatalogCache')
+    .mockResolvedValue(undefined);
+  const auth = authFixture();
+  auth.signOut.mockImplementationOnce(async () => {
+    expect(clear).toHaveBeenCalledTimes(1);
+    return { error: null };
+  });
+  await signOutAndClearCache(auth.client, createQueryClient());
+  expect(auth.signOut).toHaveBeenCalledTimes(1);
+});
+
+it('does not report successful logout when persistent cleanup fails', async () => {
+  jest
+    .spyOn(persistentCache, 'clearCatalogCache')
+    .mockRejectedValueOnce(new Error('disk unavailable'));
+  const auth = authFixture();
+  const cache = createQueryClient();
+  cache.setQueryData(['private'], 'data');
+  await expect(signOutAndClearCache(auth.client, cache)).rejects.toThrow(
+    'disk unavailable',
+  );
+  expect(auth.signOut).not.toHaveBeenCalled();
+  expect(cache.getQueryCache().getAll()).toHaveLength(0);
+});
 
 function createQueryClient() {
   return new QueryClient({

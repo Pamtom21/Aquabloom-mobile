@@ -5,8 +5,10 @@ Base para el [Sprint 1 móvil](https://linear.app/aquabloom/project/sprint-1-apl
 La implementación y evidencia de las ocho tareas de José y Demian de la primera
 semana están en [Semana 1 — José y Demian](docs/week1-jose-demian.md).
 
-La entrega de perfil, usuario actual, cierre de sesión y pruebas de José
-(AQU-25–28) está documentada en [Autenticación de José](docs/jose-auth-delivery.md).
+La entrega de perfil, usuario actual y cierre de sesión (AQU-25–28) está
+documentada en [Autenticación](docs/jose-auth-delivery.md). El detalle de lagos
+y estaciones (AQU-37–40) está en [Catálogo](docs/catalog-delivery.md), y la
+persistencia móvil (AQU-49–52) en [Caché y modo sin conexión](docs/offline-delivery.md).
 
 ## Comenzar
 
@@ -78,13 +80,30 @@ development/preview generan APK; production, AAB. No se lanzó build remoto ni s
 - scripts y contracts: generación OpenAPI.
 - docs/linear-sprint.md: 48 tareas, responsables y dependencias.
 
-Rama sugerida: feat/aqu-17-secure-session. Un PR por unidad revisable, enlazar Linear, añadir evidencia y pedir revisión de otro integrante. CI ejecuta check, compatibilidad Expo y export Android. El workflow no configura protección de main; se puede exigir Mobile CI / quality y una aprobación desde GitHub.
+Un PR por unidad revisable, enlazar Linear y añadir evidencia local. Ejecutar
+`pnpm run check` y `pnpm run export:android` en el equipo. Mobile CI queda
+exclusivamente manual (`workflow_dispatch`): no se ejecuta al enviar commits
+ni abrir PR en esta rama. No se requiere GitHub Actions ni contratar un plan
+para validar los cambios. No se han modificado las reglas de protección del
+repositorio; la configuración manual se aplica a otras ramas cuando integren
+este cambio.
 
 ## Integraciones pendientes
 
-El contrato móvil inicial está versionado en `contracts/openapi.json` y genera los tipos consumidos por el catálogo. El equipo Web/API debe alinear su `/openapi.json` con esta operación o reemplazar el archivo y regenerar los tipos antes de integrar el backend. Aún se deben acordar GeoJSON, errores, roles y semillas.
+El contrato móvil de lectura está versionado en `contracts/openapi.json`,
+contrastado con el código de referencia del backend y genera los tipos del
+catálogo, detalle y estaciones. La referencia se consultó sin modificarla.
+Falta comprobar una instancia desplegada y completar los mapas.
 
-SQLite y SecureStore están instalados; migraciones, caché persistente por usuario/organización, TTL y fallback offline siguen pendientes. Cuando se active SQLite, su limpieza debe integrarse al cierre de sesión y a los cambios de identidad. Las pruebas de autenticación integran el SDK real de Supabase con HTTP simulado; no certifican el servicio remoto. Para AQU-41, implementar E2E después del detalle con cuentas de prueba. Mapas, offline y verificación en dispositivo siguen pendientes.
+SQLite conserva el catálogo público en Android/iOS durante 24 horas, separado
+por API, usuario y consulta. El cierre de sesión y los cambios de identidad
+limpian la caché. Web sigue sin persistencia SQLite. Los endpoints actuales no
+tienen contexto de organización; los datos privados necesitarán un alcance
+específico antes de almacenarse. No se guardan perfiles ni tokens.
+
+SecureStore, mapas, E2E con cuentas reales y verificación en dispositivo siguen
+pendientes. Las pruebas de autenticación integran el SDK real de Supabase con
+HTTP simulado; no certifican el servicio remoto.
 
 ## Referencias
 

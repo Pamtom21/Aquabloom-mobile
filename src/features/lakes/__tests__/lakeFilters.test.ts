@@ -37,6 +37,6 @@ describe('filtros del catálogo de lagos', () => {
         page: 2,
         page_size: 10,
       }),
-    ).toBe('search=Lago+Azul&region=Los+R%C3%ADos&page=2&page_size=10');
+    ).toBe('text=Lago+Azul&region=Los+R%C3%ADos&page=2&limit=10');
   });
 });

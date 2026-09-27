@@ -2,18 +2,17 @@ import { router } from 'expo-router';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { tokens } from '../../theme/tokens';
 import type { Lake } from './types';
+import { lakeRoute } from './catalogNavigation';
 
 export function LakeCard({ lake }: { lake: Lake }) {
-  const location = [lake.commune, lake.region].filter(Boolean).join(', ');
+  const location = lake.region;
 
   return (
     <Pressable
       accessibilityHint="Abre la ficha completa del lago"
       accessibilityLabel={`Ver detalle de ${lake.name}, ${location}`}
       accessibilityRole="button"
-      onPress={() =>
-        router.push({ pathname: '/lakes/[id]', params: { id: lake.id } })
-      }
+      onPress={() => router.push(lakeRoute(lake.id))}
       style={({ pressed }) => [styles.card, pressed && styles.pressed]}
     >
       <View style={styles.headingRow}>

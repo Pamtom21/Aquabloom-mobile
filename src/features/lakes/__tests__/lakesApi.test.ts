@@ -22,7 +22,7 @@ describe('cliente del catálogo de lagos', () => {
     ).resolves.toEqual(response);
 
     expect(request).toHaveBeenCalledWith(
-      '/lakes?search=Villarrica&region=Araucan%C3%ADa&page=1&page_size=20',
+      '/lakes?text=Villarrica&region=Araucan%C3%ADa&page=1&limit=20',
       { signal: controller.signal },
     );
   });

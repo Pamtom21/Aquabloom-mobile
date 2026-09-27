@@ -2,8 +2,8 @@
   "openapi": "3.1.0",
   "info": {
     "title": "AquaBloom API",
-    "version": "0.1.0",
-    "description": "Contrato consumido por la aplicación móvil para consultar el catálogo de lagos."
+    "version": "0.2.0",
+    "description": "Subset móvil de AquaBloomSur2do/aquabloom-sur@160cf95e95ed916e9cc9ce19244f56f268d0154d, apps/api/app/lakes.py y schemas.py. Rutas relativas a /api/v1."
   },
   "paths": {
     "/lakes": {
@@ -12,32 +12,49 @@
         "summary": "Listar lagos",
         "parameters": [
           {
-            "name": "search",
+            "name": "text",
             "in": "query",
             "required": false,
-            "schema": { "type": "string", "minLength": 1 }
+            "schema": {
+              "type": "string"
+            }
           },
           {
             "name": "region",
             "in": "query",
             "required": false,
-            "schema": { "type": "string", "minLength": 1 }
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
           },
           {
             "name": "page",
             "in": "query",
             "required": false,
-            "schema": { "type": "integer", "minimum": 1, "default": 1 }
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            }
           },
           {
-            "name": "page_size",
+            "name": "limit",
             "in": "query",
             "required": false,
             "schema": {
               "type": "integer",
               "minimum": 1,
               "maximum": 100,
-              "default": 20
+              "default": 10
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
             }
           }
         ],
@@ -46,15 +63,99 @@
             "description": "Página de lagos",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/LakeListResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/LakeListResponse"
+                }
               }
             }
           },
-          "401": {
-            "description": "Sesión ausente o vencida"
-          },
           "422": {
             "description": "Filtros inválidos"
+          }
+        }
+      }
+    },
+    "/lakes/{lake_id}": {
+      "get": {
+        "operationId": "getLakeDetail",
+        "parameters": [
+          {
+            "name": "lake_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Respuesta del catálogo",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LakeDetail"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Lago inexistente"
+          },
+          "422": {
+            "description": "Parámetros inválidos"
+          },
+          "503": {
+            "description": "Servicio no disponible"
+          }
+        }
+      }
+    },
+    "/lakes/{lake_id}/stations": {
+      "get": {
+        "operationId": "listLakeStations",
+        "parameters": [
+          {
+            "name": "lake_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Respuesta del catálogo",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Station"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Lago inexistente"
+          },
+          "422": {
+            "description": "Parámetros inválidos"
+          },
+          "503": {
+            "description": "Servicio no disponible"
           }
         }
       }
@@ -64,23 +165,25 @@
     "schemas": {
       "Lake": {
         "type": "object",
-        "required": ["id", "name", "region"],
+        "required": ["id", "name", "region", "status"],
         "properties": {
-          "id": { "type": "string", "format": "uuid" },
-          "name": { "type": "string", "minLength": 1 },
-          "region": { "type": "string", "minLength": 1 },
-          "commune": { "type": ["string", "null"] },
-          "status": { "type": ["string", "null"] },
-          "description": { "type": ["string", "null"] },
-          "latitude": {
-            "type": ["number", "null"],
-            "minimum": -90,
-            "maximum": 90
+          "id": {
+            "type": "string",
+            "format": "uuid"
           },
-          "longitude": {
-            "type": ["number", "null"],
-            "minimum": -180,
-            "maximum": 180
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "region": {
+            "type": "string",
+            "minLength": 1
+          },
+          "status": {
+            "type": "string"
+          },
+          "description": {
+            "type": ["string", "null"]
           }
         }
       },
@@ -90,11 +193,110 @@
         "properties": {
           "items": {
             "type": "array",
-            "items": { "$ref": "#/components/schemas/Lake" }
+            "items": {
+              "$ref": "#/components/schemas/Lake"
+            }
           },
-          "page": { "type": "integer", "minimum": 1 },
-          "page_size": { "type": "integer", "minimum": 1 },
-          "total": { "type": "integer", "minimum": 0 }
+          "page": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "page_size": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "total": {
+            "type": "integer",
+            "minimum": 0
+          }
+        }
+      },
+      "LakeDetail": {
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "region",
+          "status",
+          "geom",
+          "created_at",
+          "updated_at"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "region": {
+            "type": "string",
+            "minLength": 1
+          },
+          "status": {
+            "type": "string"
+          },
+          "description": {
+            "type": ["string", "null"]
+          },
+          "geom": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "Station": {
+        "type": "object",
+        "required": [
+          "id",
+          "lake_id",
+          "code",
+          "name",
+          "point",
+          "status",
+          "created_at",
+          "updated_at"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "lake_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "code": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "point": {},
+          "description": {
+            "type": ["string", "null"]
+          },
+          "status": {
+            "type": "string"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          }
         }
       }
     }

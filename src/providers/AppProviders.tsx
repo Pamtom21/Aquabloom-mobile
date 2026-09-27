@@ -10,6 +10,7 @@ import {
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { ApiError } from '../lib/http';
 import { AuthProvider } from '../features/auth/AuthProvider';
+import { OfflineCacheMissError } from '../features/offline/cache';
 
 export const queryCachePolicy = {
   staleTime: 60_000,
@@ -18,6 +19,7 @@ export const queryCachePolicy = {
 } as const;
 
 export function shouldRetryQuery(failureCount: number, error: unknown) {
+  if (error instanceof OfflineCacheMissError) return false;
   if (error instanceof Error && error.name === 'AbortError') return false;
   if (error instanceof ApiError && error.status < 500) return false;
   return failureCount < queryCachePolicy.maxRetries;
