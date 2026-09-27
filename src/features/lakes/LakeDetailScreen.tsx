@@ -6,11 +6,21 @@ import { catalogError } from './catalogError';
 import { isCatalogId } from './catalogSchemas';
 import { useLakeDetail } from './useLakeDetail';
 import { StationsList } from './StationsList';
+import { OfflineNotice } from '../offline/OfflineNotice';
 
 export function LakeDetailScreen({ id }: { id: string }) {
   const lake = useLakeDetail(id);
   return (
-    <Screen title={lake.data?.name ?? 'Detalle de lago'}>
+    <Screen
+      title={
+        !lake.isError
+          ? (lake.data?.name ?? 'Detalle de lago')
+          : 'Detalle de lago'
+      }
+    >
+      {lake.isOffline && !lake.isError ? (
+        <OfflineNotice savedAt={lake.savedAt} />
+      ) : null}
       {!isCatalogId(id) ? (
         <AsyncState kind="error" message="El enlace del lago no es válido." />
       ) : lake.isPending ? (

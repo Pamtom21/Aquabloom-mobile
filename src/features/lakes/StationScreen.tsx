@@ -6,6 +6,7 @@ import { catalogError } from './catalogError';
 import { lakeRoute } from './catalogNavigation';
 import { isCatalogId } from './catalogSchemas';
 import { useStations } from './useStations';
+import { OfflineNotice } from '../offline/OfflineNotice';
 
 export function StationScreen({
   lakeId,
@@ -20,7 +21,12 @@ export function StationScreen({
     (item) => item.id.toLowerCase() === stationId.toLowerCase(),
   );
   return (
-    <Screen title={station?.name ?? 'Estación'}>
+    <Screen
+      title={!stations.isError ? (station?.name ?? 'Estación') : 'Estación'}
+    >
+      {stations.isOffline && !stations.isError ? (
+        <OfflineNotice savedAt={stations.savedAt} />
+      ) : null}
       {!valid ? (
         <AsyncState
           kind="error"

@@ -5,6 +5,7 @@ import { tokens } from '../../theme/tokens';
 import { catalogError } from './catalogError';
 import { stationRoute } from './catalogNavigation';
 import { useStations } from './useStations';
+import { OfflineNotice } from '../offline/OfflineNotice';
 
 export function StationsList({ lakeId }: { lakeId: string }) {
   const stations = useStations(lakeId);
@@ -20,13 +21,19 @@ export function StationsList({ lakeId }: { lakeId: string }) {
     );
   if (!stations.data?.length)
     return (
-      <AsyncState
-        kind="empty"
-        message="Este lago no tiene estaciones registradas."
-      />
+      <>
+        {stations.isOffline ? (
+          <OfflineNotice savedAt={stations.savedAt} />
+        ) : null}
+        <AsyncState
+          kind="empty"
+          message="Este lago no tiene estaciones registradas."
+        />
+      </>
     );
   return (
     <View style={styles.list}>
+      {stations.isOffline ? <OfflineNotice savedAt={stations.savedAt} /> : null}
       {stations.data.map((station) => (
         <Pressable
           key={station.id}

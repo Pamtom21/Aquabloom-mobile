@@ -6,6 +6,8 @@ import {
 import { normalizeLakeFilters } from './lakeFilters';
 import { fetchLakes } from './lakesApi';
 import type { LakeFilters } from './types';
+import { cachedCatalog } from '../offline/catalogCache';
+import { lakeListSchema } from './catalogSchemas';
 
 export const lakeKeys = {
   all: ['lakes'] as const,
@@ -24,12 +26,25 @@ export function lakesQueryOptions(
   const queryKey = lakeKeys.list(normalizedFilters);
   return {
     queryKey,
+    networkMode: 'always' as const,
+    refetchOnReconnect: 'always' as const,
     queryFn: ({ signal }: QueryFunctionContext<LakesQueryKey>) =>
-      loader(normalizedFilters, signal),
+      cachedCatalog(
+        queryKey,
+        () => loader(normalizedFilters, signal),
+        (value) => lakeListSchema.parse(value),
+        signal,
+      ),
     placeholderData: keepPreviousData,
   };
 }
 
 export function useLakes(filters: LakeFilters = {}) {
-  return useQuery(lakesQueryOptions(filters));
+  const query = useQuery(lakesQueryOptions(filters));
+  return {
+    ...query,
+    data: query.data?.data,
+    isOffline: query.data?.source === 'cache',
+    savedAt: query.data?.savedAt,
+  };
 }

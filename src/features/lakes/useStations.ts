@@ -1,5 +1,6 @@
 import { useQuery, type QueryFunctionContext } from '@tanstack/react-query';
-import { fetchStations } from './catalogApi';
+import { fetchStations, parseStationsForLake } from './catalogApi';
+import { cachedCatalog } from '../offline/catalogCache';
 import { isCatalogId } from './catalogSchemas';
 
 export const stationsKey = (id: string) =>
@@ -8,9 +9,23 @@ export function stationsQueryOptions(id: string, loader = fetchStations) {
   return {
     queryKey: stationsKey(id),
     enabled: isCatalogId(id),
-    queryFn: ({ signal }: QueryFunctionContext) => loader(id, signal),
+    networkMode: 'always' as const,
+    refetchOnReconnect: 'always' as const,
+    queryFn: ({ signal }: QueryFunctionContext) =>
+      cachedCatalog(
+        stationsKey(id),
+        () => loader(id, signal),
+        (value) => parseStationsForLake(id, value),
+        signal,
+      ),
   };
 }
 export function useStations(id: string) {
-  return useQuery(stationsQueryOptions(id));
+  const query = useQuery(stationsQueryOptions(id));
+  return {
+    ...query,
+    data: query.data?.data,
+    isOffline: query.data?.source === 'cache',
+    savedAt: query.data?.savedAt,
+  };
 }

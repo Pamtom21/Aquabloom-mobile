@@ -1,3 +1,10 @@
+export class NetworkError extends Error {
+  constructor() {
+    super('No se pudo conectar con la API. Revisa tu conexión.');
+    this.name = 'NetworkError';
+  }
+}
+
 export class ApiError extends Error {
   constructor(
     public readonly status: number,
@@ -69,7 +76,7 @@ export function createHttpClient(
       if (init.signal?.aborted) throw error;
       if (timedOut) throw new Error('La API tardó demasiado en responder.');
       if (error instanceof ApiError) throw error;
-      throw new Error('No se pudo conectar con la API. Revisa tu conexión.');
+      throw new NetworkError();
     } finally {
       clearTimeout(timeout);
       init.signal?.removeEventListener('abort', cancel);

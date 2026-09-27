@@ -1,6 +1,7 @@
 import { useQuery, type QueryFunctionContext } from '@tanstack/react-query';
 import { fetchLakeDetail } from './catalogApi';
-import { isCatalogId } from './catalogSchemas';
+import { isCatalogId, lakeDetailSchema } from './catalogSchemas';
+import { cachedCatalog } from '../offline/catalogCache';
 
 export const lakeDetailKey = (id: string) =>
   ['lakes', 'detail', id.toLowerCase()] as const;
@@ -8,9 +9,23 @@ export function lakeDetailQueryOptions(id: string, loader = fetchLakeDetail) {
   return {
     queryKey: lakeDetailKey(id),
     enabled: isCatalogId(id),
-    queryFn: ({ signal }: QueryFunctionContext) => loader(id, signal),
+    networkMode: 'always' as const,
+    refetchOnReconnect: 'always' as const,
+    queryFn: ({ signal }: QueryFunctionContext) =>
+      cachedCatalog(
+        lakeDetailKey(id),
+        () => loader(id, signal),
+        (value) => lakeDetailSchema.parse(value),
+        signal,
+      ),
   };
 }
 export function useLakeDetail(id: string) {
-  return useQuery(lakeDetailQueryOptions(id));
+  const query = useQuery(lakeDetailQueryOptions(id));
+  return {
+    ...query,
+    data: query.data?.data,
+    isOffline: query.data?.source === 'cache',
+    savedAt: query.data?.savedAt,
+  };
 }

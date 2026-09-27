@@ -13,6 +13,8 @@ import { tokens } from '../../theme/tokens';
 import { LakeCard } from './LakeCard';
 import type { LakeFilters } from './types';
 import { useLakes } from './useLakes';
+import { OfflineNotice } from '../offline/OfflineNotice';
+import { catalogError } from './catalogError';
 
 const initialFilters: LakeFilters = { page: 1, page_size: 20 };
 
@@ -20,7 +22,7 @@ function readableCatalogError(error: unknown) {
   if (error instanceof Error && error.message.includes('EXPO_PUBLIC_API_URL')) {
     return error.message;
   }
-  return 'No pudimos cargar el catálogo. Revisa tu conexión e inténtalo nuevamente.';
+  return catalogError(error, 'el catálogo');
 }
 
 export function CatalogScreen() {
@@ -94,6 +96,9 @@ export function CatalogScreen() {
         </View>
       </View>
 
+      {lakes.isOffline && !lakes.isError ? (
+        <OfflineNotice savedAt={lakes.savedAt} />
+      ) : null}
       {lakes.isPending ? (
         <AsyncState kind="loading" message="Cargando catálogo de lagos…" />
       ) : lakes.isError ? (
@@ -102,7 +107,7 @@ export function CatalogScreen() {
           message={readableCatalogError(lakes.error)}
           onRetry={() => lakes.refetch()}
         />
-      ) : lakes.data.items.length === 0 ? (
+      ) : !lakes.data || lakes.data.items.length === 0 ? (
         <AsyncState
           kind="empty"
           message="No encontramos lagos para los filtros seleccionados."

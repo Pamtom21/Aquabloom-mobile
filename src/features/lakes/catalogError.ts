@@ -1,5 +1,7 @@
 import { ApiError } from '../../lib/http';
+import { OfflineCacheMissError } from '../offline/cache';
 export function catalogError(error: unknown, resource: string) {
+  if (error instanceof OfflineCacheMissError) return error.message;
   if (error instanceof ApiError) {
     if (error.status === 404) return 'No encontramos ' + resource + '.';
     if (error.status === 401)

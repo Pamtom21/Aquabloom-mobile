@@ -14,6 +14,7 @@ import { AsyncState } from '../../components/AsyncState';
 import { Screen } from '../../components/Screen';
 import { supabase } from '../../lib/supabase';
 import { signOutAndClearCache } from './signOut';
+import { setCatalogIdentity } from '../offline/catalogCache';
 
 export type AuthClient = {
   auth: Pick<
@@ -86,6 +87,7 @@ export function AuthProvider({
     let active = true;
     let revision = 0;
     let identity: string | null | undefined;
+    setCatalogIdentity(null);
     if (!client) return;
     queryClient.clear();
 
@@ -97,6 +99,7 @@ export function AuthProvider({
         // can observe their data. Same-user refreshes preserve the cache.
         queryClient.clear();
         identity = user?.id;
+        setCatalogIdentity(user?.id ?? null);
       }
       setState({ user, status: 'ready', error: null });
     };
