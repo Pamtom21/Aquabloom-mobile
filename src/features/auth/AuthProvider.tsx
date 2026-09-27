@@ -4,6 +4,7 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useRef,
   useState,
   type PropsWithChildren,
 } from 'react';
@@ -12,6 +13,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { AsyncState } from '../../components/AsyncState';
 import { Screen } from '../../components/Screen';
 import { supabase } from '../../lib/supabase';
+import { signOutAndClearCache } from './signOut';
 
 export type AuthClient = {
   auth: Pick<
@@ -26,7 +28,12 @@ type AuthState = {
   error: string | null;
 };
 
-type AuthContextValue = AuthState & { retry: () => void };
+type AuthContextValue = AuthState & {
+  retry: () => void;
+  signOut: () => Promise<boolean>;
+  isSigningOut: boolean;
+  signOutError: string | null;
+};
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({
@@ -35,6 +42,9 @@ export function AuthProvider({
 }: PropsWithChildren<{ client?: AuthClient | null }>) {
   const queryClient = useQueryClient();
   const [attempt, setAttempt] = useState(0);
+  const [isSigningOut, setIsSigningOut] = useState(false);
+  const [signOutError, setSignOutError] = useState<string | null>(null);
+  const pendingSignOut = useRef<Promise<boolean> | null>(null);
   const [state, setState] = useState<AuthState>({
     user: null,
     status: client ? 'loading' : 'unconfigured',
@@ -44,6 +54,33 @@ export function AuthProvider({
     setState({ user: null, status: 'loading', error: null });
     setAttempt((value) => value + 1);
   }, []);
+
+  const signOut = useCallback(() => {
+    if (pendingSignOut.current) return pendingSignOut.current;
+    setIsSigningOut(true);
+    setSignOutError(null);
+    const operation = signOutAndClearCache(client, queryClient)
+      .then(() => {
+        setState({
+          user: null,
+          status: client ? 'ready' : 'unconfigured',
+          error: null,
+        });
+        return true;
+      })
+      .catch(() => {
+        setSignOutError(
+          'No pudimos cerrar la sesión. Revisa tu conexión y vuelve a intentarlo.',
+        );
+        return false;
+      })
+      .finally(() => {
+        pendingSignOut.current = null;
+        setIsSigningOut(false);
+      });
+    pendingSignOut.current = operation;
+    return operation;
+  }, [client, queryClient]);
 
   useEffect(() => {
     let active = true;
@@ -95,10 +132,15 @@ export function AuthProvider({
   }, [client, queryClient, attempt]);
 
   return (
-    <AuthContext.Provider value={{ ...state, retry }}>
-      {state.status === 'loading' ? (
+    <AuthContext.Provider
+      value={{ ...state, retry, signOut, isSigningOut, signOutError }}
+    >
+      {state.status === 'loading' || isSigningOut ? (
         <Screen title="AquaBloom">
-          <AsyncState kind="loading" message="Cargando sesión…" />
+          <AsyncState
+            kind="loading"
+            message={isSigningOut ? 'Cerrando sesión…' : 'Cargando sesión…'}
+          />
         </Screen>
       ) : state.status === 'error' ? (
         <Screen title="AquaBloom">
