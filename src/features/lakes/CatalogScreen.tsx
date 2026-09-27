@@ -4,11 +4,13 @@ import {
   StyleSheet,
   Text,
   TextInput,
+  useWindowDimensions,
   View,
 } from 'react-native';
 import { AppButton } from '../../components/AppButton';
 import { AsyncState } from '../../components/AsyncState';
 import { Screen } from '../../components/Screen';
+import { resolveResponsiveLayout } from '../../theme/responsive';
 import { tokens } from '../../theme/tokens';
 import { LakeCard } from './LakeCard';
 import type { LakeFilters } from './types';
@@ -24,6 +26,8 @@ function readableCatalogError(error: unknown) {
 }
 
 export function CatalogScreen() {
+  const { fontScale, width } = useWindowDimensions();
+  const layout = resolveResponsiveLayout(width, fontScale);
   const [search, setSearch] = useState('');
   const [region, setRegion] = useState('');
   const [filters, setFilters] = useState<LakeFilters>(initialFilters);
@@ -46,7 +50,10 @@ export function CatalogScreen() {
 
   return (
     <Screen title="Catálogo de lagos">
-      <View accessibilityRole="search" style={styles.filters}>
+      <View
+        accessibilityRole="search"
+        style={[styles.filters, layout.isCompact && styles.compactFilters]}
+      >
         <Text style={styles.sectionTitle}>Buscar en el catálogo</Text>
         <TextInput
           accessibilityLabel="Nombre del lago"
@@ -70,10 +77,19 @@ export function CatalogScreen() {
           style={styles.input}
           value={region}
         />
-        <View style={styles.actions}>
-          <AppButton onPress={applyFilters}>Aplicar filtros</AppButton>
+        <View style={[styles.actions, layout.stackActions && styles.stack]}>
+          <AppButton
+            onPress={applyFilters}
+            style={layout.stackActions && styles.fullWidth}
+          >
+            Aplicar filtros
+          </AppButton>
           {hasFilters ? (
-            <AppButton onPress={clearFilters} variant="secondary">
+            <AppButton
+              onPress={clearFilters}
+              style={layout.stackActions && styles.fullWidth}
+              variant="secondary"
+            >
               Limpiar
             </AppButton>
           ) : null}
@@ -108,7 +124,11 @@ export function CatalogScreen() {
             ) : null}
           </View>
           {lakes.data.items.map((lake) => (
-            <LakeCard key={lake.id} lake={lake} />
+            <LakeCard
+              key={lake.id}
+              lake={lake}
+              style={layout.columns === 2 ? styles.wideCard : styles.singleCard}
+            />
           ))}
         </View>
       )}
@@ -125,6 +145,7 @@ const styles = StyleSheet.create({
     borderRadius: tokens.radius,
     backgroundColor: tokens.colors.surface,
   },
+  compactFilters: { padding: tokens.spacing.sm },
   sectionTitle: {
     color: tokens.colors.text,
     fontSize: 18,
@@ -140,10 +161,19 @@ const styles = StyleSheet.create({
     color: tokens.colors.text,
   },
   actions: { flexDirection: 'row', flexWrap: 'wrap', gap: tokens.spacing.sm },
-  results: { gap: tokens.spacing.md },
+  stack: { flexDirection: 'column' },
+  fullWidth: { width: '100%' },
+  results: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: tokens.spacing.md,
+  },
   resultsHeading: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    width: '100%',
   },
+  singleCard: { width: '100%' },
+  wideCard: { flexBasis: '47%', flexGrow: 1, minWidth: 280 },
 });

@@ -1,9 +1,22 @@
 import { router } from 'expo-router';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import {
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+  type StyleProp,
+  type ViewStyle,
+} from 'react-native';
 import { tokens } from '../../theme/tokens';
 import type { Lake } from './types';
 
-export function LakeCard({ lake }: { lake: Lake }) {
+export function LakeCard({
+  lake,
+  style,
+}: {
+  lake: Lake;
+  style?: StyleProp<ViewStyle>;
+}) {
   const location = [lake.commune, lake.region].filter(Boolean).join(', ');
   const accessibleLocation = location ? `, ${location}` : '';
 
@@ -15,7 +28,7 @@ export function LakeCard({ lake }: { lake: Lake }) {
       onPress={() =>
         router.push({ pathname: '/lakes/[id]', params: { id: lake.id } })
       }
-      style={({ pressed }) => [styles.card, pressed && styles.pressed]}
+      style={({ pressed }) => [styles.card, style, pressed && styles.pressed]}
     >
       <View style={styles.headingRow}>
         <Text style={styles.name}>{lake.name}</Text>
