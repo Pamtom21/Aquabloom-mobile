@@ -31,9 +31,9 @@ export function normalizeLakeFilters(
 
 export function serializeLakeFilters(filters: NormalizedLakeFilters) {
   const params = new URLSearchParams();
-  if (filters.search) params.set('search', filters.search);
+  if (filters.search) params.set('text', filters.search);
   if (filters.region) params.set('region', filters.region);
   params.set('page', String(filters.page));
-  params.set('page_size', String(filters.page_size));
+  params.set('limit', String(filters.page_size));
   return params.toString();
 }

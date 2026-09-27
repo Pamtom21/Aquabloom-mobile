@@ -79,7 +79,6 @@ describe('CatalogScreen', () => {
               id: '08c06bab-c038-461c-b3d2-a19e580e2a28',
               name: 'Lago Villarrica',
               region: 'La Araucanía',
-              commune: 'Pucón',
               status: 'vigilancia',
               description: 'Monitoreo activo de floraciones algales.',
             },
@@ -96,7 +95,7 @@ describe('CatalogScreen', () => {
     expect(view.getByText('Lago Villarrica')).toBeTruthy();
     await fireEvent.press(
       view.getByRole('button', {
-        name: 'Ver detalle de Lago Villarrica, Pucón, La Araucanía',
+        name: 'Ver detalle de Lago Villarrica, La Araucanía',
       }),
     );
     expect(router.push).toHaveBeenCalledWith({
