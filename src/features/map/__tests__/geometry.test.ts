@@ -1,5 +1,29 @@
-import { lakeFeature, lakeBounds } from '../geometry';
-import { lake } from '../../lakes/__tests__/fixtures';
+import { lakeFeature, lakeBounds, stationFeatures } from '../geometry';
+import { lake, station } from '../../lakes/__tests__/fixtures';
+
+it('retains station IDs and excludes invalid points and stations from other lakes', () => {
+  const valid = {
+    ...station,
+    point: { type: 'Point', coordinates: [-72, -39] },
+  };
+  const result = stationFeatures(
+    [
+      valid,
+      { ...valid, id: 'other', lake_id: 'other-lake' },
+      { ...station, id: 'missing' },
+      {
+        ...valid,
+        id: 'invalid',
+        point: { type: 'Point', coordinates: [-72, 120] },
+      },
+    ],
+    lake.id,
+  );
+  expect(result.features).toHaveLength(1);
+  expect(result.features[0].id).toBe(station.id);
+  expect(result.features[0].geometry.coordinates).toEqual([-72, -39]);
+  expect(stationFeatures([valid], 'other-lake').features).toEqual([]);
+});
 
 const ring = [
   [-72, -39],

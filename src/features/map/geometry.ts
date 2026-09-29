@@ -1,6 +1,12 @@
 import { z } from 'zod';
-import type { Feature, MultiPolygon, Polygon } from 'geojson';
-import type { LakeDetail } from '../lakes/types';
+import type {
+  Feature,
+  FeatureCollection,
+  MultiPolygon,
+  Point,
+  Polygon,
+} from 'geojson';
+import type { LakeDetail, Station } from '../lakes/types';
 
 const position = z
   .tuple([z.number().min(-180).max(180), z.number().min(-90).max(90)])
@@ -28,6 +34,30 @@ export type LakeFeature = Feature<
   Polygon | MultiPolygon,
   { id: string; name: string }
 >;
+
+const point = z.object({ type: z.literal('Point'), coordinates: position });
+export type StationFeatures = FeatureCollection<
+  Point,
+  { id: string; name: string }
+>;
+export function stationFeatures(
+  stations: Station[],
+  lakeId: string,
+): StationFeatures {
+  const features: StationFeatures['features'] = [];
+  for (const station of stations) {
+    if (station.lake_id.toLowerCase() !== lakeId.toLowerCase()) continue;
+    const parsed = point.safeParse(station.point);
+    if (parsed.success)
+      features.push({
+        type: 'Feature',
+        id: station.id,
+        properties: { id: station.id, name: station.name },
+        geometry: parsed.data,
+      });
+  }
+  return { type: 'FeatureCollection', features };
+}
 
 export function lakeFeature(lake: LakeDetail): LakeFeature | null {
   const parsed = geometry.safeParse(lake.geom);

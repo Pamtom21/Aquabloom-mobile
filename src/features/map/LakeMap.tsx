@@ -6,11 +6,12 @@ import {
   GeoJSONSource,
   Layer,
 } from '@maplibre/maplibre-react-native';
-import { lakeBounds, type LakeFeature } from './geometry';
+import { lakeBounds } from './geometry';
+import type { LakeMapProps } from './mapTypes';
 import { AsyncState } from '../../components/AsyncState';
 import { tokens } from '../../theme/tokens';
 
-export function LakeMap({ feature = null }: { feature?: LakeFeature | null }) {
+export function LakeMap({ feature = null, stations }: LakeMapProps) {
   const bounds = useMemo(
     () => (feature ? lakeBounds(feature) : undefined),
     [feature],
@@ -50,6 +51,20 @@ export function LakeMap({ feature = null }: { feature?: LakeFeature | null }) {
               />
             </GeoJSONSource>
           </>
+        )}
+        {stations && (
+          <GeoJSONSource id="stations" data={stations}>
+            <Layer
+              id="station-markers"
+              type="circle"
+              paint={{
+                'circle-radius': 7,
+                'circle-color': '#D85A14',
+                'circle-stroke-width': 2,
+                'circle-stroke-color': '#FFFFFF',
+              }}
+            />
+          </GeoJSONSource>
         )}
       </Map>
       {status !== 'ready' && (

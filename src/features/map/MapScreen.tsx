@@ -4,23 +4,36 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { AsyncState } from '../../components/AsyncState';
 import { useLakes } from '../lakes/useLakes';
 import { useLakeDetail } from '../lakes/useLakeDetail';
+import { useStations } from '../lakes/useStations';
 import { OfflineNotice } from '../offline/OfflineNotice';
 import { catalogError } from '../lakes/catalogError';
 import { LakeMap } from './LakeMap';
-import { lakeFeature } from './geometry';
+import { lakeFeature, stationFeatures } from './geometry';
 
 export function MapScreen() {
   const [page, setPage] = useState(1);
   const [selectedId, setSelectedId] = useState('');
   const lakes = useLakes({ page, page_size: 20 });
   const detail = useLakeDetail(selectedId);
+  const stations = useStations(selectedId);
+  const markers = useMemo(
+    () =>
+      stationFeatures(
+        stations.isError ? [] : (stations.data ?? []),
+        selectedId,
+      ),
+    [stations.data, stations.isError, selectedId],
+  );
   const feature = useMemo(
     () => (detail.data && !detail.isError ? lakeFeature(detail.data) : null),
     [detail.data, detail.isError],
   );
   return (
     <SafeAreaView style={{ flex: 1 }} edges={['left', 'right', 'bottom']}>
-      <View style={{ padding: 12, gap: 8 }}>
+      <ScrollView
+        style={{ maxHeight: '40%', flexGrow: 0 }}
+        contentContainerStyle={{ padding: 12, gap: 8 }}
+      >
         {lakes.isPending ? (
           <AsyncState kind="loading" message="Cargando lagos…" />
         ) : lakes.isError ? (
@@ -82,8 +95,33 @@ export function MapScreen() {
         {detail.isOffline && !detail.isError && (
           <OfflineNotice savedAt={detail.savedAt} />
         )}
-      </View>
-      <LakeMap feature={feature} />
+        {!!selectedId &&
+          (stations.isPending ? (
+            <AsyncState kind="loading" message="Cargando estaciones…" />
+          ) : stations.isError ? (
+            <AsyncState
+              kind="error"
+              message={catalogError(stations.error, 'las estaciones')}
+              onRetry={() => stations.refetch()}
+            />
+          ) : (
+            <>
+              <Text>
+                {markers.features.length} estaciones con ubicación disponible
+              </Text>
+              {(stations.data?.length ?? 0) > markers.features.length && (
+                <Text>
+                  Hay estaciones sin coordenadas válidas que no se muestran en
+                  el mapa.
+                </Text>
+              )}
+              {stations.isOffline && (
+                <OfflineNotice savedAt={stations.savedAt} />
+              )}
+            </>
+          ))}
+      </ScrollView>
+      <LakeMap feature={feature} stations={markers} />
     </SafeAreaView>
   );
 }

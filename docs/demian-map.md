@@ -24,3 +24,12 @@ No se inventan coordenadas si faltan o son inválidas: se informa al usuario.
 MapLibre dibuja relleno y borde, y ajusta la cámara a los límites del lago.
 Las pruebas cubren geometrías válidas/erróneas, selección y paginación.
 Queda pendiente comprobar los polígonos de la API desplegada en Android.
+
+## AQU-31 — Estaciones
+
+Se consultan las estaciones del lago seleccionado con el hook y caché existentes.
+Sólo se dibujan puntos GeoJSON válidos pertenecientes a ese lago; no se sustituyen
+coordenadas ausentes por (0,0). Los círculos naranjos contrastan con los polígonos,
+mantienen el ID de la estación y se actualizan al cambiar de lago. Se informa el
+número de ubicaciones disponibles, registros sin coordenadas, carga y errores.
+La cabecera permite desplazamiento vertical en pantallas pequeñas.

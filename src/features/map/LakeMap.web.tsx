@@ -1,9 +1,9 @@
 import { Link } from 'expo-router';
 import { View } from 'react-native';
 import { AsyncState } from '../../components/AsyncState';
-import type { LakeFeature } from './geometry';
+import type { LakeMapProps } from './mapTypes';
 
-export function LakeMap(_props: { feature?: LakeFeature | null }) {
+export function LakeMap(_props: LakeMapProps) {
   return (
     <View style={{ padding: 24, gap: 16 }}>
       <AsyncState
