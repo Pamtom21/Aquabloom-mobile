@@ -33,3 +33,13 @@ coordenadas ausentes por (0,0). Los círculos naranjos contrastan con los políg
 mantienen el ID de la estación y se actualizan al cambiar de lago. Se informa el
 número de ubicaciones disponibles, registros sin coordenadas, carga y errores.
 La cabecera permite desplazamiento vertical en pantallas pequeñas.
+
+## AQU-32 — Ficha inferior
+
+Tocar el polígono o un marcador abre la ficha del elemento seleccionado. El
+selector de lagos y los botones de estaciones ofrecen la misma acción de forma
+accesible. La ficha muestra nombre, región o código, estado y descripción; enlaza
+al detalle existente y permite cerrarse. Cambiar de lago reemplaza la selección
+anterior. No se muestra una estación que ya no pertenezca al lago actual.
+La ficha ocupa una sección inferior limitada y desplazable sin cubrir la
+atribución del mapa. Se prueba selección, reemplazo, cierre y destino del enlace.

@@ -4,12 +4,15 @@ import { LakeMap } from '../LakeMap';
 import { useLakes } from '../../lakes/useLakes';
 import { useLakeDetail } from '../../lakes/useLakeDetail';
 import { useStations } from '../../lakes/useStations';
-import { lake } from '../../lakes/__tests__/fixtures';
+import { lake, station } from '../../lakes/__tests__/fixtures';
 
 jest.mock('../LakeMap', () => ({ LakeMap: jest.fn(() => null) }));
 jest.mock('../../lakes/useLakes');
 jest.mock('../../lakes/useLakeDetail');
 jest.mock('../../lakes/useStations');
+jest.mock('expo-router', () => ({
+  Link: jest.requireActual('react-native').Text,
+}));
 const validLake = {
   ...lake,
   geom: {
@@ -69,4 +72,33 @@ it('does not pass unavailable geometry to the native renderer', async () => {
   );
   expect(screen.getByText(/no tiene un polígono válido/)).toBeTruthy();
   expect(latestMap().feature).toBeNull();
+});
+
+it('shows the selected station, closes its sheet and replaces it with lake information', async () => {
+  jest.mocked(useStations).mockReturnValue({
+    data: [{ ...station, point: { type: 'Point', coordinates: [-72, -39] } }],
+    isError: false,
+    isPending: false,
+  } as unknown as ReturnType<typeof useStations>);
+  await render(<MapScreen />);
+  await fireEvent.press(
+    screen.getByLabelText(`Mostrar ${lake.name} en el mapa`),
+  );
+  expect(
+    screen.getByLabelText(`Ver detalle de ${lake.name}`).props.href.params,
+  ).toEqual({ id: lake.id });
+  await fireEvent.press(
+    screen.getByLabelText(`Seleccionar estación ${station.name}`),
+  );
+  expect(screen.getByText(station.description)).toBeTruthy();
+  expect(
+    screen.getByLabelText(`Ver detalle de ${station.name}`).props.href.params,
+  ).toEqual({ id: lake.id, stationId: station.id });
+  await fireEvent.press(screen.getByText('Cerrar ficha'));
+  expect(screen.queryByText(station.description)).toBeNull();
+  await fireEvent.press(
+    screen.getByLabelText(`Mostrar ${lake.name} en el mapa`),
+  );
+  expect(screen.getByText(lake.description)).toBeTruthy();
+  expect(screen.queryByText(station.description)).toBeNull();
 });

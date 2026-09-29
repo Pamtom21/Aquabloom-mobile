@@ -11,7 +11,7 @@ import type { LakeMapProps } from './mapTypes';
 import { AsyncState } from '../../components/AsyncState';
 import { tokens } from '../../theme/tokens';
 
-export function LakeMap({ feature = null, stations }: LakeMapProps) {
+export function LakeMap({ feature = null, stations, onSelect }: LakeMapProps) {
   const bounds = useMemo(
     () => (feature ? lakeBounds(feature) : undefined),
     [feature],
@@ -38,7 +38,14 @@ export function LakeMap({ feature = null, stations }: LakeMapProps) {
         />
         {feature && (
           <>
-            <GeoJSONSource id="selected-lake" data={feature}>
+            <GeoJSONSource
+              id="selected-lake"
+              data={feature}
+              onPress={(event) => {
+                event.stopPropagation();
+                onSelect?.({ kind: 'lake', id: feature.properties.id });
+              }}
+            >
               <Layer
                 id="lake-fill"
                 type="fill"
@@ -53,7 +60,19 @@ export function LakeMap({ feature = null, stations }: LakeMapProps) {
           </>
         )}
         {stations && (
-          <GeoJSONSource id="stations" data={stations}>
+          <GeoJSONSource
+            id="stations"
+            data={stations}
+            onPress={(event) => {
+              event.stopPropagation();
+              const id = event.nativeEvent.features[0]?.properties?.id;
+              if (
+                typeof id === 'string' &&
+                stations.features.some((item) => item.properties.id === id)
+              )
+                onSelect?.({ kind: 'station', id });
+            }}
+          >
             <Layer
               id="station-markers"
               type="circle"
@@ -87,7 +106,7 @@ export function LakeMap({ feature = null, stations }: LakeMapProps) {
   );
 }
 const styles = StyleSheet.create({
-  container: { flex: 1, minHeight: 320 },
+  container: { flex: 1 },
   notice: {
     position: 'absolute',
     top: 16,
