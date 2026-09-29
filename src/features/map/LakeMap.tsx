@@ -1,10 +1,20 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
-import { Map, Camera } from '@maplibre/maplibre-react-native';
+import {
+  Map,
+  Camera,
+  GeoJSONSource,
+  Layer,
+} from '@maplibre/maplibre-react-native';
+import { lakeBounds, type LakeFeature } from './geometry';
 import { AsyncState } from '../../components/AsyncState';
 import { tokens } from '../../theme/tokens';
 
-export function LakeMap() {
+export function LakeMap({ feature = null }: { feature?: LakeFeature | null }) {
+  const bounds = useMemo(
+    () => (feature ? lakeBounds(feature) : undefined),
+    [feature],
+  );
   const [attempt, setAttempt] = useState(0);
   const [status, setStatus] = useState<'loading' | 'ready' | 'error'>(
     'loading',
@@ -19,7 +29,28 @@ export function LakeMap() {
         onDidFinishLoadingMap={() => setStatus('ready')}
         onDidFailLoadingMap={() => setStatus('error')}
       >
-        <Camera initialViewState={{ center: [-72.15, -39.28], zoom: 7 }} />
+        <Camera
+          initialViewState={{ center: [-72.15, -39.28], zoom: 7 }}
+          bounds={bounds}
+          padding={{ top: 40, bottom: 40, left: 40, right: 40 }}
+          duration={500}
+        />
+        {feature && (
+          <>
+            <GeoJSONSource id="selected-lake" data={feature}>
+              <Layer
+                id="lake-fill"
+                type="fill"
+                paint={{ 'fill-color': '#006879', 'fill-opacity': 0.3 }}
+              />
+              <Layer
+                id="lake-outline"
+                type="line"
+                paint={{ 'line-color': '#006879', 'line-width': 2 }}
+              />
+            </GeoJSONSource>
+          </>
+        )}
       </Map>
       {status !== 'ready' && (
         <View style={styles.notice}>

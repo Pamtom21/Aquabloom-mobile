@@ -3,7 +3,12 @@ import { LakeMap } from '../LakeMap';
 
 jest.mock('@maplibre/maplibre-react-native', () => {
   const { View } = jest.requireActual('react-native');
-  return { Map: View, Camera: () => null };
+  return {
+    Map: View,
+    Camera: () => null,
+    GeoJSONSource: View,
+    Layer: () => null,
+  };
 });
 
 it('shows loading, accepts native success and recovers from a failed load', async () => {
