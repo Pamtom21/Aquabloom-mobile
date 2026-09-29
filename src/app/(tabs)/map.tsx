@@ -1,12 +1,9 @@
-import { Screen } from '../../components/Screen';
-import { AsyncState } from '../../components/AsyncState';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { LakeMap } from '../../features/map/LakeMap';
 export default function MapScreen() {
   return (
-    <Screen title="Mapa">
-      <AsyncState
-        kind="empty"
-        message="MapLibre está instalado. AQU-29 a AQU-32 incorporarán el mapa, los polígonos y las estaciones en una compilación Android de desarrollo."
-      />
-    </Screen>
+    <SafeAreaView style={{ flex: 1 }} edges={['left', 'right', 'bottom']}>
+      <LakeMap />
+    </SafeAreaView>
   );
 }
