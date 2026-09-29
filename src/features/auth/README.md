@@ -20,7 +20,6 @@ de pantallas. Los refrescos del mismo usuario conservan la caché.
 Las pruebas de integración ejercitan formulario, SDK real de Supabase,
 AuthProvider y perfil con transporte HTTP simulado. No requieren credenciales.
 
-SessionLifecycle controla el refresco por AppState. La protección general de
-rutas continúa en AQU-19. Nunca se guardan tokens en SQLite. El cierre y los
+SessionLifecycle controla el refresco por AppState. RequireSession protege /profile y redirige al login; catálogo y mapa permanecen públicos. Nunca se guardan tokens en SQLite. El cierre y los
 cambios de usuario limpian la caché persistente. Ver `docs/demian-session.md`
 para la persistencia y `docs/jose-auth-delivery.md` para la entrega previa.
