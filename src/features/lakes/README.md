@@ -5,6 +5,10 @@ los filtros, los incorpora en la `queryKey` y propaga `AbortSignal` hasta el
 cliente HTTP. La primera página usa 20 elementos y el contrato limita el máximo
 a 100.
 
-Las coordenadas son opcionales hasta que las tareas de mapa definan los
-polígonos GeoJSON. Los hooks de detalle y estaciones permanecen en AQU-37 y
-AQU-38.
+`useLakeDetail` y `useStations` consultan el detalle y las estaciones del lago.
+Validan UUID, respuestas y pertenencia de estaciones. Las pantallas manejan
+carga, errores, vacío y navegación mediante enlaces directos. La ficha de una
+estación la busca dentro del listado del lago, según el contrato del backend.
+
+Los tres hooks usan caché SQLite nativa para consultas sin conexión, muestran
+la fecha de los datos guardados y vuelven a consultar al reconectar.

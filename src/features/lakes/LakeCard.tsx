@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { tokens } from '../../theme/tokens';
 import type { Lake } from './types';
+import { lakeRoute } from './catalogNavigation';
 
 export function LakeCard({
   lake,
@@ -17,7 +18,7 @@ export function LakeCard({
   lake: Lake;
   style?: StyleProp<ViewStyle>;
 }) {
-  const location = [lake.commune, lake.region].filter(Boolean).join(', ');
+  const location = lake.region;
   const accessibleLocation = location ? `, ${location}` : '';
 
   return (
@@ -25,9 +26,7 @@ export function LakeCard({
       accessibilityHint="Abre la ficha completa del lago"
       accessibilityLabel={`Ver detalle de ${lake.name}${accessibleLocation}`}
       accessibilityRole="button"
-      onPress={() =>
-        router.push({ pathname: '/lakes/[id]', params: { id: lake.id } })
-      }
+      onPress={() => router.push(lakeRoute(lake.id))}
       style={({ pressed }) => [styles.card, style, pressed && styles.pressed]}
     >
       <View style={styles.headingRow}>

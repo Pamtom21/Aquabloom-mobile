@@ -2,6 +2,14 @@
 
 Consulta Linear: 2026-09-05. Las 48 tareas estaban en Backlog. Linear sigue siendo la fuente de estado; no se cerraron tareas automáticamente.
 
+Actualización de implementación, 27 de septiembre: AQU-25–28 cuentan con
+[entrega de autenticación](jose-auth-delivery.md), AQU-37–40 con
+[detalle y estaciones](catalog-delivery.md) y AQU-49–52 con
+[caché SQLite y modo sin conexión](offline-delivery.md). Las tablas siguientes
+conservan el diagnóstico inicial, no el estado actual de implementación ni de
+Linear. La configuración de CI pasa a ejecución manual por decisión del
+propietario; la validación se realiza localmente.
+
 Actualización del 8 de septiembre: las ocho tareas de la Semana 1 de José y Demian
 cuentan con [revisión técnica y evidencia](week1-jose-demian.md). Su aceptación
 final requiere revisión del PR e integración con los servicios reales.

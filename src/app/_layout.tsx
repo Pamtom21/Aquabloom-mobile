@@ -13,6 +13,10 @@ export default function RootLayout() {
           name="lakes/[id]"
           options={{ title: 'Detalle de lago' }}
         />
+        <Stack.Screen
+          name="lakes/[id]/stations/[stationId]"
+          options={{ title: 'Estación' }}
+        />
       </Stack>
     </AppProviders>
   );

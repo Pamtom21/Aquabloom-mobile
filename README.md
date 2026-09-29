@@ -12,6 +12,13 @@ mapa, detalle de lagos, comportamiento offline y preparación Android.
 - Para desarrollo nativo: Android Studio, Android SDK 36, JDK 21 y un
   emulador o dispositivo con depuración habilitada.
 
+## Entregas del sprint
+
+La entrega de perfil, usuario actual y cierre de sesión (AQU-25–28) está
+documentada en [Autenticación](docs/jose-auth-delivery.md). El detalle de lagos
+y estaciones (AQU-37–40) está en [Catálogo](docs/catalog-delivery.md), y la
+persistencia móvil (AQU-49–52) en [Caché y modo sin conexión](docs/offline-delivery.md).
+
 Comprueba las herramientas antes de instalar:
 
 ```sh
@@ -73,6 +80,14 @@ En un teléfono físico, `localhost` apunta al teléfono. Usa HTTPS o la IP LAN 
 equipo que ejecuta FastAPI. En web, el backend también debe permitir el origen de
 Expo mediante CORS.
 
+El cliente agrega `/health` (AQU-59) y trata el cuerpo como `unknown` hasta
+recibir OpenAPI real. `AuthProvider` sincroniza el usuario actual con Supabase y
+el perfil sólo muestra datos con una sesión activa. El cierre afecta a la sesión
+actual, limpia TanStack Query y descarta la caché persistente asociada. La sesión
+permanece en memoria: SecureStore, refresh por AppState y protección general de
+rutas siguen pendientes en AQU-17–19. Los permisos de la API deben validarse en
+el servidor.
+
 ## Verificación antes de desarrollar
 
 Ejecuta el mismo control de calidad usado por integración continua:
@@ -133,6 +148,12 @@ tools/openapi/       workspace del generador con dependencias aisladas
 docs/                alcance, evidencia y decisiones del sprint
 ```
 
+Cada unidad revisable se integra mediante PR enlazado a Linear y con evidencia
+local. Mobile CI se ejecuta exclusivamente de forma manual (`workflow_dispatch`):
+no consume GitHub Actions al enviar commits ni al abrir un PR. La validación
+reproducible se realiza con `pnpm run check`, `pnpm run doctor` y
+`pnpm run export:android`.
+
 El cliente HTTP añade el prefijo configurado, cancela solicitudes y aplica un
 límite de 15 segundos. React Query comparte políticas de caché y reintento. El
 estado global de conectividad pausa consultas al quedar offline y presenta un
@@ -177,8 +198,26 @@ versiones credenciales, archivos de firma ni tokens de EAS.
 4. No agregues secretos ni artefactos generados fuera de los declarados.
 5. Abre un pull request, enlaza los tickets de Linear y solicita revisión.
 
-El CI repite los controles locales en cada pull request. La evidencia del Sprint
-1 y la asignación de sus 48 tareas están en [`docs/linear-sprint.md`](docs/linear-sprint.md).
+La validación local reproduce los controles del flujo manual. La evidencia del
+Sprint 1 y la asignación de sus 48 tareas están en
+[`docs/linear-sprint.md`](docs/linear-sprint.md).
+
+## Estado de las integraciones
+
+El contrato móvil de lectura está versionado en `contracts/openapi.json`,
+contrastado con el código de referencia del backend y genera los tipos del
+catálogo, detalle y estaciones. La referencia se consultó sin modificarla.
+Falta comprobar una instancia desplegada y completar los mapas.
+
+SQLite conserva el catálogo público en Android/iOS durante 24 horas, separado
+por API, usuario y consulta. El cierre de sesión y los cambios de identidad
+limpian la caché. Web sigue sin persistencia SQLite. Los endpoints actuales no
+tienen contexto de organización; los datos privados necesitarán un alcance
+específico antes de almacenarse. No se guardan perfiles ni tokens.
+
+SecureStore, mapas, E2E con cuentas reales y verificación en dispositivo siguen
+pendientes. Las pruebas de autenticación integran el SDK real de Supabase con
+HTTP simulado; no certifican el servicio remoto.
 
 ## Referencias
 
