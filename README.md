@@ -41,7 +41,7 @@ variables Supabase vacías para arrancar sin ese servicio, o configurar las dos;
 una configuración parcial muestra un error de configuración. El cliente HTTP
 mantiene un límite de 15 segundos incluso en consultas cancelables.
 
-El cliente agrega /health (AQU-59) y trata el cuerpo como unknown hasta recibir OpenAPI real. API disponible significa HTTP exitoso con JSON. Supabase se crea al configurar ambas variables. AuthProvider sincroniza el usuario actual con Supabase y el perfil muestra datos solo con sesión. El cierre afecta a la sesión actual y limpia TanStack Query. La sesión permanece en memoria: SecureStore, refresh por AppState y protección general de rutas siguen pendientes en AQU-17–19. El perfil controla su propio acceso; los permisos de la API deben validarse en el servidor.
+El cliente agrega /health (AQU-59) y trata el cuerpo como unknown hasta recibir OpenAPI real. API disponible significa HTTP exitoso con JSON. Supabase se crea al configurar ambas variables. AuthProvider sincroniza el usuario actual con Supabase y el perfil muestra datos solo con sesión. El cierre afecta a la sesión actual y limpia TanStack Query. La sesión se conserva con SecureStore en Android/iOS y el refresco sigue AppState (AQU-17); web usa memoria. La protección general de rutas sigue pendiente en AQU-19. El perfil controla su propio acceso; los permisos de la API deben validarse en el servidor.
 
 ## Comandos
 
@@ -101,7 +101,7 @@ limpian la caché. Web sigue sin persistencia SQLite. Los endpoints actuales no
 tienen contexto de organización; los datos privados necesitarán un alcance
 específico antes de almacenarse. No se guardan perfiles ni tokens.
 
-SecureStore, mapas, E2E con cuentas reales y verificación en dispositivo siguen
+Mapas, E2E con cuentas reales y verificación en dispositivo siguen
 pendientes. Las pruebas de autenticación integran el SDK real de Supabase con
 HTTP simulado; no certifican el servicio remoto.
 

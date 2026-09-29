@@ -12,7 +12,7 @@ describe('Supabase bootstrap', () => {
     });
   });
 
-  it('creates a usable client without persisting a session', async () => {
+  it('creates a usable client with an initially empty secure session', async () => {
     let session!: ReturnType<
       NonNullable<
         (typeof import('../supabase'))['supabase']
