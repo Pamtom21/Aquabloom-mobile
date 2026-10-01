@@ -55,8 +55,9 @@ No hay variables públicas configuradas en el entorno preview.
 El instalador corresponde a `demian/sprint-1`; no incorpora los once commits
 adicionales observados en `origin/franco` (punta `6cc288f`). La integración final
 del equipo requiere revisar esos cambios por separado.
-No hay Android SDK/adb disponible en este equipo ni instalación comprobada.
-Falta registrar el dispositivo, la versión Android y el resultado al abrirlo.
+No hay Android SDK/adb disponible en este equipo. El 01-10-2026 Demian confirmó
+la instalación y apertura correctas en un teléfono Android físico. El APK funciona
+de forma independiente y no necesita el computador, Metro ni Expo Go.
 Verificar arranque, login, restauración tras reiniciar, logout, catálogo, detalle,
 mapa, polígonos, estaciones, ficha inferior y reintento sin red. Adjuntar evidencia
 real antes de dar esta tarea por terminada.

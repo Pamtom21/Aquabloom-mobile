@@ -16,7 +16,7 @@ validado localmente de aceptación final; no certifica un cierre total del sprin
 | 23-09        | AQU-32         | `7120b3a`, [ficha inferior](demian-map.md)                              | Gestos y disposición en Android                                 |
 | 30-09        | AQU-41         | `cff116d`, [E2E ejecutada](../e2e/README.md)                            | Revisión del PR; servicios reales fuera del alcance del fixture |
 | 30-09        | AQU-42         | `3884aa1`, [perfiles EAS](demian-android.md)                            | Proyecto vinculado; revisión del PR pendiente                   |
-| 30-09        | AQU-43         | [APK generado con EAS](demian-android.md)                               | Instalación en Android pendiente                                |
+| 30-09        | AQU-43         | [APK generado e instalado](demian-android.md)                           | Completada                                                      |
 | 30-09        | AQU-44         | Este documento                                                          | Adjuntar evidencia nativa y aprobación cuando existan           |
 
 ## Validaciones realizadas
@@ -32,7 +32,7 @@ validado localmente de aceptación final; no certifica un cierre total del sprin
 - [x] Proyecto EAS real vinculado a la cuenta autorizada deimon005.
 - [ ] Variables públicas de servicios configuradas para pruebas con datos reales.
 - [x] APK generado y URL/ID del build registrados.
-- [ ] Instalación y pruebas en dispositivo o emulador documentadas.
+- [x] Instalación y apertura confirmadas en un teléfono Android físico.
 - [ ] Revisión y aprobación del PR antes de integrar en main.
 
 Una ejecución simultánea de Jest y la preparación del navegador excedió el
@@ -44,9 +44,9 @@ la visible; se corrigió el selector y el recorrido completo pasó.
 
 EAS terminó correctamente el build preview
 `74b7edf7-dbb1-473e-90af-b6867b152372` y publicó un APK de 149.898.955 bytes.
-No hay SDK/adb en el equipo y todavía no existe evidencia de instalación, por lo
-que AQU-43 no se debe marcar como Done. Registrar el dispositivo, la versión
-Android, el resultado de cada recorrido y capturas reales al completarlo.
+No hay SDK/adb en el equipo. Demian confirmó el 01-10-2026 que el APK se instaló,
+abrió y funcionó correctamente en un teléfono Android físico. AQU-43 quedó Done
+en Linear. Las variables de servicios reales siguen siendo un trabajo separado.
 
 La revisión nativa debe cubrir persistencia de sesión al reiniciar, logout y
 limpieza, redirección del perfil, catálogo, detalle, mapa, polígonos, marcadores,
