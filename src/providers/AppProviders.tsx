@@ -10,6 +10,7 @@ import {
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { ApiError } from '../lib/http';
 import { AuthProvider } from '../features/auth/AuthProvider';
+import { SessionLifecycle } from '../features/auth/SessionLifecycle';
 import { OfflineCacheMissError } from '../features/offline/cache';
 
 export const queryCachePolicy = {
@@ -59,6 +60,7 @@ export function AppProviders({ children }: PropsWithChildren) {
   return (
     <SafeAreaProvider>
       <QueryClientProvider client={client}>
+        <SessionLifecycle />
         <AuthProvider>{children}</AuthProvider>
       </QueryClientProvider>
     </SafeAreaProvider>

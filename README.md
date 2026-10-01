@@ -10,6 +10,9 @@ documentada en [Autenticación](docs/jose-auth-delivery.md). El detalle de lagos
 y estaciones (AQU-37–40) está en [Catálogo](docs/catalog-delivery.md), y la
 persistencia móvil (AQU-49–52) en [Caché y modo sin conexión](docs/offline-delivery.md).
 
+La entrega de Demian y sus pendientes de aceptación están reunidos en
+[Evidencia y lista de cierre](docs/demian-sprint-closeout.md).
+
 ## Comenzar
 
 Requisitos: Git, Node 24.3.0 (.nvmrc) y pnpm 11.5.0. Expo SDK 57 / React Native 0.86. La app usa TypeScript 6. El generador OpenAPI usa TypeScript 5.9 en tools/openapi para respetar sus dependencias sin alterar Expo. No instalar con --force.
@@ -41,7 +44,7 @@ variables Supabase vacías para arrancar sin ese servicio, o configurar las dos;
 una configuración parcial muestra un error de configuración. El cliente HTTP
 mantiene un límite de 15 segundos incluso en consultas cancelables.
 
-El cliente agrega /health (AQU-59) y trata el cuerpo como unknown hasta recibir OpenAPI real. API disponible significa HTTP exitoso con JSON. Supabase se crea al configurar ambas variables. AuthProvider sincroniza el usuario actual con Supabase y el perfil muestra datos solo con sesión. El cierre afecta a la sesión actual y limpia TanStack Query. La sesión permanece en memoria: SecureStore, refresh por AppState y protección general de rutas siguen pendientes en AQU-17–19. El perfil controla su propio acceso; los permisos de la API deben validarse en el servidor.
+El cliente agrega /health (AQU-59) y trata el cuerpo como unknown hasta recibir OpenAPI real. API disponible significa HTTP exitoso con JSON. Supabase se crea al configurar ambas variables. AuthProvider sincroniza el usuario actual con Supabase y el perfil muestra datos solo con sesión. El cierre afecta a la sesión actual y limpia TanStack Query. La sesión se conserva con SecureStore en Android/iOS y el refresco sigue AppState (AQU-17); web usa memoria. La ruta privada /profile redirige al login y vuelve al perfil tras autenticarse (AQU-19); el catálogo sigue siendo público; los permisos de la API deben validarse en el servidor.
 
 ## Comandos
 
@@ -58,12 +61,12 @@ El cliente agrega /health (AQU-59) y trata el cuerpo como unknown hasta recibir 
 
 ## Android y EAS
 
-MapLibre está instalado con plugin; el mapa se implementa en AQU-29–32. No funciona en Expo Go: necesita development build ([MapLibre](https://maplibre.org/maplibre-react-native/docs/setup/expo/)). Compilar localmente requiere Android Studio, SDK 36, emulador/dispositivo y JDK compatible con Expo/Gradle. En este equipo se detectó Java 21; no adb ni ANDROID_HOME. No se ha verificado compilación nativa ni instalación.
+La pestaña Mapa monta MapLibre con cámara inicial, carga, error y reintento (AQU-29; [validación](docs/demian-map.md)). No funciona en Expo Go: necesita development build ([MapLibre](https://maplibre.org/maplibre-react-native/docs/setup/expo/)). Compilar localmente requiere Android Studio, SDK 36, emulador/dispositivo y JDK compatible con Expo/Gradle. No se ha verificado compilación nativa ni instalación. Web ofrece acceso al catálogo.
 
-Iniciar sesión en EAS y ejecutar `pnpm dlx eas-cli@latest init` seleccionando el proyecto del equipo para obtener projectId real. Confirmar el identificador provisional `com.aquabloom.mobile` antes de distribuir y configurar las variables públicas en EAS.
+Iniciar sesión en EAS y ejecutar `npx eas-cli@24.8.0 init` seleccionando el proyecto del equipo para obtener projectId real. Confirmar el identificador provisional `com.aquabloom.mobile` antes de distribuir y configurar las variables públicas en EAS. Los perfiles y la verificación local están en [Android y EAS](docs/demian-android.md).
 
 ```sh
-pnpm dlx eas-cli@latest build --platform android --profile development
+npx eas-cli@24.8.0 build --platform android --profile development
 # Instalar APK y después:
 pnpm start
 ```
@@ -93,7 +96,7 @@ este cambio.
 El contrato móvil de lectura está versionado en `contracts/openapi.json`,
 contrastado con el código de referencia del backend y genera los tipos del
 catálogo, detalle y estaciones. La referencia se consultó sin modificarla.
-Falta comprobar una instancia desplegada y completar los mapas.
+Falta comprobar una instancia desplegada y validar los mapas en Android.
 
 SQLite conserva el catálogo público en Android/iOS durante 24 horas, separado
 por API, usuario y consulta. El cierre de sesión y los cambios de identidad
@@ -101,9 +104,10 @@ limpian la caché. Web sigue sin persistencia SQLite. Los endpoints actuales no
 tienen contexto de organización; los datos privados necesitarán un alcance
 específico antes de almacenarse. No se guardan perfiles ni tokens.
 
-SecureStore, mapas, E2E con cuentas reales y verificación en dispositivo siguen
-pendientes. Las pruebas de autenticación integran el SDK real de Supabase con
-HTTP simulado; no certifican el servicio remoto.
+El mapa, polígonos, estaciones y ficha inferior están implementados. La
+[prueba E2E](e2e/README.md) recorre login, perfil, catálogo y detalle con HTTP
+simulado (`pnpm run test:e2e`). Las cuentas reales y la verificación en dispositivo
+siguen pendientes; las pruebas locales no certifican el servicio remoto.
 
 ## Referencias
 

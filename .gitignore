@@ -46,3 +46,5 @@ yarn-error.*
 coverage/
 *.apk
 *.aab
+test-results/
+playwright-report/
