@@ -12,6 +12,8 @@ persistencia móvil (AQU-49–52) en [Caché y modo sin conexión](docs/offline-
 
 La entrega de Demian y sus pendientes de aceptación están reunidos en
 [Evidencia y lista de cierre](docs/demian-sprint-closeout.md).
+El procedimiento completo para repetir la compilación está en
+[Tutorial para generar el APK](docs/tutorial-generar-apk.md).
 
 ## Comenzar
 
@@ -61,12 +63,12 @@ El cliente agrega /health (AQU-59) y trata el cuerpo como unknown hasta recibir 
 
 ## Android y EAS
 
-La pestaña Mapa monta MapLibre con cámara inicial, carga, error y reintento (AQU-29; [validación](docs/demian-map.md)). No funciona en Expo Go: necesita development build ([MapLibre](https://maplibre.org/maplibre-react-native/docs/setup/expo/)). Compilar localmente requiere Android Studio, SDK 36, emulador/dispositivo y JDK compatible con Expo/Gradle. No se ha verificado compilación nativa ni instalación. Web ofrece acceso al catálogo.
+La pestaña Mapa monta MapLibre con cámara inicial, carga, error y reintento (AQU-29; [validación](docs/demian-map.md)). No funciona en Expo Go: necesita un build nativo ([MapLibre](https://maplibre.org/maplibre-react-native/docs/setup/expo/)). El APK preview se compiló con EAS, se instaló y abrió correctamente en un teléfono Android físico. Web ofrece acceso al catálogo.
 
-Iniciar sesión en EAS y ejecutar `npx eas-cli@24.8.0 init` seleccionando el proyecto del equipo para obtener projectId real. Confirmar el identificador provisional `com.aquabloom.mobile` antes de distribuir y configurar las variables públicas en EAS. Los perfiles y la verificación local están en [Android y EAS](docs/demian-android.md).
+El proyecto está vinculado a `@deimon005/aquabloom-mobile` con su projectId real. Antes de generar una versión conectada se deben configurar las variables públicas en EAS. Los perfiles y la evidencia están en [Android y EAS](docs/demian-android.md).
 
 ```sh
-npx eas-cli@24.8.0 build --platform android --profile development
+npx eas-cli@24.8.0 build --platform android --profile preview
 # Instalar APK y después:
 pnpm start
 ```
