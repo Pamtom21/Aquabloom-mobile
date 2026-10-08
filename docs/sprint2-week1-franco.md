@@ -68,6 +68,18 @@ borradores ejecutadas contra el motor SQLite real de Node 24. `test:e2e` requier
 genera `observation-saved.png` en `test-results/` como evidencia visual temporal.
 La exportación Android acredita el bundle, no un APK instalado.
 
+Resultado local del 7 de octubre de 2026, con Node 24 y pnpm 11.5.0:
+
+- `pnpm run check`: formato, lint y ambos proyectos TypeScript aprobados; 34 suites / 158 pruebas Jest y 22 pruebas SQLite aprobadas.
+- `pnpm run test:e2e`: dos recorridos aprobados, incluido el borrador en viewport móvil.
+- `pnpm run doctor`: 21 de 21 comprobaciones aprobadas tras alinear los parches del SDK 57.
+- `pnpm run export:android`: bundle Hermes de 4,7 MB, 1611 módulos y 30 assets, exportado correctamente.
+- `git diff --check`: sin errores de espacios ni marcadores de conflicto.
+
+Las 182 pruebas locales no acreditan permisos de cámara/ubicación ni consumo
+del servidor real. Los fixtures E2E están rotulados como demostración y la
+prueba SQLite usa archivos temporales creados específicamente por el test.
+
 Esta integración también incorpora los commits previos de AQU-45–48 que seguían
 en `franco` y sincroniza los avances de sesión, mapa y E2E de `main` mediante
 merge normal, conservando cada commit.
