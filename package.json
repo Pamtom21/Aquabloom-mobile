@@ -59,7 +59,7 @@
     "test": "jest --runInBand",
     "test:watch": "jest --watch",
     "test:e2e": "playwright test",
-    "test:offline": "node --test scripts/offline.test.mjs",
+    "test:offline": "node --test scripts/offline.test.mjs scripts/observation-store.test.mjs",
     "check": "pnpm run format:check && pnpm run lint && pnpm run typecheck && pnpm run test && pnpm run test:offline",
     "export:android": "expo export --platform android --max-workers 2",
     "doctor": "pnpm dlx expo-doctor",
