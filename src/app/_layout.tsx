@@ -14,6 +14,10 @@ export default function RootLayout() {
           options={{ title: 'Detalle de lago' }}
         />
         <Stack.Screen
+          name="lakes/[id]/observations"
+          options={{ title: 'Observación de terreno' }}
+        />
+        <Stack.Screen
           name="lakes/[id]/stations/[stationId]"
           options={{ title: 'Estación' }}
         />
