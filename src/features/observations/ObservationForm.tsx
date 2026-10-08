@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useId, useRef, useState } from 'react';
 import { StyleSheet, Text, TextInput, View } from 'react-native';
 import { AppButton } from '../../components/AppButton';
 import { tokens } from '../../theme/tokens';
@@ -27,6 +27,9 @@ export function ObservationForm({
   durability,
   onSave,
 }: Props) {
+  const fieldId = useId();
+  const dateLabelId = `observation-date-${fieldId}`;
+  const noteLabelId = `observation-note-${fieldId}`;
   const [dateText, setDateText] = useState(() =>
     formatObservationDate(
       initial ? new Date(initial.values.observedAt) : new Date(),
@@ -106,12 +109,12 @@ export function ObservationForm({
       </Text>
       <DraftStatus phase={phase} savedAt={savedAt} durability={durability} />
       <View style={styles.field}>
-        <Text nativeID="observation-date-label" style={styles.label}>
+        <Text nativeID={dateLabelId} style={styles.label}>
           Fecha y hora de la observación
         </Text>
         <TextInput
           accessibilityLabel="Fecha y hora de la observación"
-          accessibilityLabelledBy="observation-date-label"
+          accessibilityLabelledBy={dateLabelId}
           aria-invalid={Boolean(errors.date)}
           accessibilityState={{ disabled: isSaving }}
           editable={!isSaving}
@@ -135,13 +138,13 @@ export function ObservationForm({
         ) : null}
       </View>
       <View style={styles.field}>
-        <Text nativeID="observation-note-label" style={styles.label}>
+        <Text nativeID={noteLabelId} style={styles.label}>
           Nota de terreno
         </Text>
         <Text style={styles.muted}>Opcional; hasta 2000 caracteres.</Text>
         <TextInput
           accessibilityLabel="Nota de terreno"
-          accessibilityLabelledBy="observation-note-label"
+          accessibilityLabelledBy={noteLabelId}
           aria-invalid={Boolean(errors.note)}
           accessibilityState={{ disabled: isSaving }}
           editable={!isSaving}

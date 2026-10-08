@@ -103,11 +103,13 @@ test('lake to authenticated observation, validation, local save and recovery', a
   await page
     .getByRole('button', { name: 'Observaciones de terreno', exact: true })
     .click();
-  await expect(page.getByLabel('Nota de terreno', { exact: true })).toHaveValue(
-    'Nota de demostración guardada localmente',
-  );
   await expect(
-    page.getByText(/Vista web: guardado sólo durante esta sesión/),
+    page.getByRole('textbox', { name: 'Nota de terreno', exact: true }),
+  ).toHaveValue('Nota de demostración guardada localmente');
+  await expect(
+    page
+      .getByText(/Vista web: guardado sólo durante esta sesión/)
+      .filter({ visible: true }),
   ).toBeVisible();
   expect(writes).toEqual([]);
 });
