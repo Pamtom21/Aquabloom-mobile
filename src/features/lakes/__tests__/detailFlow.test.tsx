@@ -53,6 +53,17 @@ it('opens a station deep link by querying its parent lake', async () => {
   expect(screen.getByText('Volver al lago').props.href.params.id).toBe(lakeId);
 });
 
+it('opens observations with the selected lake without inventing another identity', async () => {
+  await mount(<LakeDetailScreen id={lakeId} />);
+  await fireEvent.press(
+    await screen.findByRole('button', { name: 'Observaciones de terreno' }),
+  );
+  expect(router.push).toHaveBeenCalledWith({
+    pathname: '/lakes/[id]/observations',
+    params: { id: lakeId },
+  });
+});
+
 it('shows an empty station list', async () => {
   request.mockImplementation(async (path: string) =>
     path.endsWith('/stations') ? [] : lake,

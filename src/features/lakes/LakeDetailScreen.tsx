@@ -1,5 +1,6 @@
 import { Text } from 'react-native';
-import { Link } from 'expo-router';
+import { Link, router } from 'expo-router';
+import { AppButton } from '../../components/AppButton';
 import { Screen } from '../../components/Screen';
 import { AsyncState } from '../../components/AsyncState';
 import { catalogError } from './catalogError';
@@ -36,6 +37,17 @@ export function LakeDetailScreen({ id }: { id: string }) {
           <Text>Región: {lake.data.region}</Text>
           <Text>Estado: {lake.data.status}</Text>
           <Text>{lake.data.description || 'Sin descripción disponible.'}</Text>
+          <AppButton
+            accessibilityHint="Abre un borrador de observación asociado a este lago"
+            onPress={() =>
+              router.push({
+                pathname: '/lakes/[id]/observations',
+                params: { id },
+              })
+            }
+          >
+            Observaciones de terreno
+          </AppButton>
           <Text accessibilityRole="header">Estaciones de monitoreo</Text>
           <StationsList lakeId={id} />
         </>

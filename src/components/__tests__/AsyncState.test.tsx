@@ -7,11 +7,18 @@ it('offers a retry after an error and invokes the provided action', async () => 
     <AsyncState kind="error" message="Sin respuesta" onRetry={retry} />,
   );
   expect(screen.getByText('Sin respuesta')).toBeTruthy();
-  await fireEvent.press(screen.getByText('Reintentar'));
+  expect(screen.getByRole('alert')).toBeTruthy();
+  await fireEvent.press(screen.getByRole('button', { name: 'Reintentar' }));
   expect(retry).toHaveBeenCalledTimes(1);
 });
 it('announces loading without offering a retry', async () => {
   await render(<AsyncState kind="loading" message="Consultando" />);
-  expect(screen.getByLabelText('Cargando')).toBeTruthy();
+  expect(screen.getByRole('progressbar', { name: 'Cargando' })).toBeTruthy();
+  expect(
+    screen.getByRole('progressbar', { name: 'Cargando' }).props
+      .accessibilityState,
+  ).toMatchObject({
+    busy: true,
+  });
   expect(screen.queryByText('Reintentar')).toBeNull();
 });
