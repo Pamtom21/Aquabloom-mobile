@@ -1,14 +1,16 @@
 import 'react-native-url-polyfill/auto';
 import { createClient } from '@supabase/supabase-js';
+import { Platform } from 'react-native';
 import { env } from '../config/env';
+import { sessionStorage } from './sessionStorage';
 
-// AQU-17/AQU-18: connect SecureStore and session lifecycle in the auth PR.
-// Until then sessions are memory-only; never persist tokens in plain storage.
 export const supabase =
   env.supabaseUrl && env.supabaseKey
     ? createClient(env.supabaseUrl, env.supabaseKey, {
         auth: {
-          persistSession: false,
+          storage: sessionStorage,
+          persistSession: Platform.OS !== 'web',
+          // SessionLifecycle owns the foreground refresh timer on mobile.
           autoRefreshToken: false,
           detectSessionInUrl: false,
         },

@@ -19,6 +19,11 @@ documentada en [Autenticación](docs/jose-auth-delivery.md). El detalle de lagos
 y estaciones (AQU-37–40) está en [Catálogo](docs/catalog-delivery.md), y la
 persistencia móvil (AQU-49–52) en [Caché y modo sin conexión](docs/offline-delivery.md).
 
+La entrega de Demian y sus pendientes de aceptación están reunidos en
+[Evidencia y lista de cierre](docs/demian-sprint-closeout.md).
+
+## Comenzar
+
 Comprueba las herramientas antes de instalar:
 
 ```sh
@@ -84,9 +89,10 @@ El cliente agrega `/health` (AQU-59) y trata el cuerpo como `unknown` hasta
 recibir OpenAPI real. `AuthProvider` sincroniza el usuario actual con Supabase y
 el perfil sólo muestra datos con una sesión activa. El cierre afecta a la sesión
 actual, limpia TanStack Query y descarta la caché persistente asociada. La sesión
-permanece en memoria: SecureStore, refresh por AppState y protección general de
-rutas siguen pendientes en AQU-17–19. Los permisos de la API deben validarse en
-el servidor.
+se conserva con SecureStore en Android/iOS y el refresco sigue AppState (AQU-17);
+web usa memoria. La ruta privada `/profile` vuelve al perfil después del login
+(AQU-19); el catálogo sigue siendo público. Los permisos de la API deben
+validarse en el servidor.
 
 ## Verificación antes de desarrollar
 
@@ -162,13 +168,17 @@ desde `contracts/openapi.json`.
 
 ## Android y EAS
 
+La pestaña Mapa monta MapLibre con polígonos, estaciones y ficha inferior
+([validación](docs/demian-map.md)). Web ofrece acceso al catálogo. Los perfiles
+y la verificación local están en [Android y EAS](docs/demian-android.md).
+
 Confirma el identificador `com.aquabloom.mobile` antes de distribuir. Para
 compilaciones remotas, inicia sesión en EAS, vincula el proyecto del equipo y
 configura allí las mismas variables públicas:
 
 ```sh
-pnpm dlx eas-cli@latest init
-pnpm dlx eas-cli@latest build --platform android --profile development
+pnpm dlx eas-cli@24.8.0 init
+pnpm dlx eas-cli@24.8.0 build --platform android --profile development
 ```
 
 Los perfiles `development` y `preview` generan APK; `production` genera AAB. No
@@ -207,7 +217,7 @@ Sprint 1 y la asignación de sus 48 tareas están en
 El contrato móvil de lectura está versionado en `contracts/openapi.json`,
 contrastado con el código de referencia del backend y genera los tipos del
 catálogo, detalle y estaciones. La referencia se consultó sin modificarla.
-Falta comprobar una instancia desplegada y completar los mapas.
+Falta comprobar una instancia desplegada y validar los mapas en Android.
 
 SQLite conserva el catálogo público en Android/iOS durante 24 horas, separado
 por API, usuario y consulta. El cierre de sesión y los cambios de identidad
@@ -215,9 +225,10 @@ limpian la caché. Web sigue sin persistencia SQLite. Los endpoints actuales no
 tienen contexto de organización; los datos privados necesitarán un alcance
 específico antes de almacenarse. No se guardan perfiles ni tokens.
 
-SecureStore, mapas, E2E con cuentas reales y verificación en dispositivo siguen
-pendientes. Las pruebas de autenticación integran el SDK real de Supabase con
-HTTP simulado; no certifican el servicio remoto.
+El mapa, polígonos, estaciones y ficha inferior están implementados. La
+[prueba E2E](e2e/README.md) recorre login, perfil, catálogo y detalle con HTTP
+simulado (`pnpm run test:e2e`). Las cuentas reales y la verificación en dispositivo
+siguen pendientes; las pruebas locales no certifican el servicio remoto.
 
 ## Referencias
 

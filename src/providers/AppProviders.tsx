@@ -10,6 +10,7 @@ import { ConnectivityBanner } from '../features/connectivity/ConnectivityBanner'
 import { ApiError } from '../lib/http';
 import { ConnectivityProvider } from './ConnectivityProvider';
 import { AuthProvider } from '../features/auth/AuthProvider';
+import { SessionLifecycle } from '../features/auth/SessionLifecycle';
 import { OfflineCacheMissError } from '../features/offline/cache';
 
 export const queryCachePolicy = {
@@ -51,6 +52,7 @@ export function AppProviders({ children }: PropsWithChildren) {
   return (
     <SafeAreaProvider>
       <QueryClientProvider client={client}>
+        <SessionLifecycle />
         <ConnectivityProvider>
           <View style={styles.application}>
             <ConnectivityBanner />

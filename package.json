@@ -31,6 +31,7 @@
     "zod": "^4.5.4"
   },
   "devDependencies": {
+    "@playwright/test": "^1.63.0",
     "@testing-library/react-native": "^14.0.1",
     "@types/geojson": "^7946.0.16",
     "@types/jest": "29.5.14",
@@ -52,11 +53,12 @@
     "web": "expo start --web",
     "android:build": "expo run:android",
     "lint": "eslint .",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc --noEmit && tsc --noEmit -p tsconfig.e2e.json",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test": "jest --runInBand",
     "test:watch": "jest --watch",
+    "test:e2e": "playwright test",
     "test:offline": "node --test scripts/offline.test.mjs",
     "check": "pnpm run format:check && pnpm run lint && pnpm run typecheck && pnpm run test && pnpm run test:offline",
     "export:android": "expo export --platform android --max-workers 2",

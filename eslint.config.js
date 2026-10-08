@@ -4,5 +4,13 @@ const prettier = require('eslint-config-prettier');
 module.exports = defineConfig([
   expo,
   prettier,
-  { ignores: ['dist/*', 'coverage/*', 'src/types/api.generated.ts'] },
+  {
+    ignores: [
+      'dist/*',
+      'coverage/*',
+      'test-results/**',
+      'playwright-report/**',
+      'src/types/api.generated.ts',
+    ],
+  },
 ]);
