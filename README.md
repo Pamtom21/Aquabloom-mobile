@@ -22,6 +22,10 @@ persistencia móvil (AQU-49–52) en [Caché y modo sin conexión](docs/offline-
 La entrega de Demian y sus pendientes de aceptación están reunidos en
 [Evidencia y lista de cierre](docs/demian-sprint-closeout.md).
 
+El formulario de observación, validación y estados locales del Sprint 2
+(AQU-251–254) está documentado en
+[Semana 1 — Franco](docs/sprint2-week1-franco.md).
+
 ## Comenzar
 
 Comprueba las herramientas antes de instalar:
