@@ -2,6 +2,7 @@ import { useRef, useState } from 'react';
 import { StyleSheet, Text, TextInput, View } from 'react-native';
 import { AppButton } from '../../components/AppButton';
 import { tokens } from '../../theme/tokens';
+import { DraftStatus } from './DraftStatus';
 import { formatObservationDate, observationDraftSchema, parseObservationDate, type ObservationValues, type StoredObservation } from './observationSchema';
 
 export type DraftPhase = 'editing' | 'saving' | 'saved';
@@ -59,9 +60,7 @@ export function ObservationForm({ lakeId, lakeName, initial, durability, onSave 
       <Text style={styles.label}>Lago seleccionado</Text>
       <Text accessibilityLabel={`Lago seleccionado: ${lakeName}`} style={styles.lake}>{lakeName}</Text>
       <Text style={styles.muted}>Borrador local · Pendiente de envío y validación. Una observación o fotografía no constituye una medición validada.</Text>
-      <Text accessibilityLiveRegion="polite">{phase === 'saving' ? 'Guardando borrador…' : phase === 'saved' ? 'Guardado local · Pendiente de envío' : 'En edición · Cambios sin guardar'}</Text>
-      {durability === 'session' ? <Text style={styles.muted}>Vista web: guardado sólo durante esta sesión; al recargar se pierde. Android/iOS guarda en el dispositivo.</Text> : null}
-      {savedAt ? <Text style={styles.muted}>Último guardado: {new Date(savedAt).toLocaleString('es-CL')}</Text> : null}
+      <DraftStatus phase={phase} savedAt={savedAt} durability={durability} />
       <View style={styles.field}>
         <Text nativeID="observation-date-label" style={styles.label}>Fecha y hora</Text>
         <TextInput accessibilityLabel="Fecha y hora de la observación" accessibilityLabelledBy="observation-date-label" aria-invalid={Boolean(errors.date)} accessibilityState={{ disabled: isSaving }} editable={!isSaving} autoCorrect={false} placeholder="AAAA-MM-DD HH:mm" value={dateText} onChangeText={(value) => { setDateText(value); setPhase('editing'); setErrors({}); }} style={[styles.input, errors.date && styles.invalid]} />
