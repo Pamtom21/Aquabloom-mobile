@@ -4,7 +4,10 @@ import { useCurrentUser } from './useCurrentUser';
 import { AsyncState } from '../../components/AsyncState';
 import { Screen } from '../../components/Screen';
 
-export function RequireSession({ children, returnTo = '/profile' }: PropsWithChildren<{ returnTo?: string }>) {
+export function RequireSession({
+  children,
+  returnTo = '/profile',
+}: PropsWithChildren<{ returnTo?: string }>) {
   const { user, status, error, retry } = useCurrentUser();
   if (status === 'loading')
     return (
@@ -23,10 +26,6 @@ export function RequireSession({ children, returnTo = '/profile' }: PropsWithChi
       </Screen>
     );
   if (!user)
-    return (
-      <Redirect
-        href={{ pathname: '/login', params: { returnTo } }}
-      />
-    );
+    return <Redirect href={{ pathname: '/login', params: { returnTo } }} />;
   return children;
 }

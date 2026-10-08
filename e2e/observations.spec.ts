@@ -1,5 +1,7 @@
 import { expect, test } from '@playwright/test';
 
+test.use({ viewport: { width: 390, height: 844 } });
+
 const id = '11111111-1111-4111-8111-111111111111';
 const lake = {
   id,
@@ -14,7 +16,7 @@ const lake = {
 
 test('lake to authenticated observation, validation, local save and recovery', async ({
   page,
-}) => {
+}, testInfo) => {
   await page.route('https://auth.aquabloom.invalid/**', async (route) => {
     if (route.request().url().includes('/token?grant_type=password')) {
       await route.fulfill({
@@ -93,6 +95,10 @@ test('lake to authenticated observation, validation, local save and recovery', a
   await expect(
     page.getByText('Sin envío al servidor · No validado', { exact: true }),
   ).toBeVisible();
+  await page.screenshot({
+    path: testInfo.outputPath('observation-saved.png'),
+    fullPage: true,
+  });
   await page.getByRole('link', { name: 'Volver al lago', exact: true }).click();
   await page
     .getByRole('button', { name: 'Observaciones de terreno', exact: true })

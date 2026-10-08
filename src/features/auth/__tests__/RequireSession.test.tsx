@@ -63,8 +63,16 @@ it.each([
 
 it('returns to an observation only for a strict internal lake UUID', () => {
   const id = '11111111-1111-4111-8111-111111111111';
-  expect(loginDestination(`/lakes/${id}/observations`)).toEqual({ pathname: '/lakes/[id]/observations', params: { id } });
-  for (const path of ['/lakes/invalid/observations', `/lakes/${id}/observations?redirect=evil`, `https://evil.example/lakes/${id}/observations`, [`/lakes/${id}/observations`]]) {
+  expect(loginDestination(`/lakes/${id}/observations`)).toEqual({
+    pathname: '/lakes/[id]/observations',
+    params: { id },
+  });
+  for (const path of [
+    '/lakes/invalid/observations',
+    `/lakes/${id}/observations?redirect=evil`,
+    `https://evil.example/lakes/${id}/observations`,
+    [`/lakes/${id}/observations`],
+  ]) {
     expect(loginDestination(path)).toBe('/');
   }
 });

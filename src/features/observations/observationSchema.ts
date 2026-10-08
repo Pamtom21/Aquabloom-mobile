@@ -1,7 +1,10 @@
 import { z } from 'zod';
 import { catalogId } from '../lakes/catalogSchemas';
 
-const utcDate = z.iso.datetime({ offset: true, message: 'La fecha no es válida.' });
+const utcDate = z.iso.datetime({
+  offset: true,
+  message: 'La fecha no es válida.',
+});
 export const observationLocationSchema = z.object({
   latitude: z.number().finite().min(-90).max(90),
   longitude: z.number().finite().min(-180).max(180),
@@ -46,8 +49,12 @@ export function parseObservationDate(value: string): string | null {
   if (year < 1900 || year > 9999) return null;
   const date = new Date(year, month - 1, day, hour, minute);
   if (
-    date.getFullYear() !== year || date.getMonth() !== month - 1 ||
-    date.getDate() !== day || date.getHours() !== hour || date.getMinutes() !== minute
-  ) return null;
+    date.getFullYear() !== year ||
+    date.getMonth() !== month - 1 ||
+    date.getDate() !== day ||
+    date.getHours() !== hour ||
+    date.getMinutes() !== minute
+  )
+    return null;
   return date.toISOString();
 }

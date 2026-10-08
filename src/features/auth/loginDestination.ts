@@ -4,7 +4,11 @@ import { isCatalogId } from '../lakes/catalogSchemas';
 export function loginDestination(value: string | string[] | undefined) {
   if (typeof value === 'string') {
     const match = /^\/lakes\/([^/]+)\/observations$/.exec(value);
-    if (match && isCatalogId(match[1])) return { pathname: '/lakes/[id]/observations' as const, params: { id: match[1] } };
+    if (match && isCatalogId(match[1]))
+      return {
+        pathname: '/lakes/[id]/observations' as const,
+        params: { id: match[1] },
+      };
   }
   return value === '/profile' ? ('/profile' as const) : ('/' as const);
 }

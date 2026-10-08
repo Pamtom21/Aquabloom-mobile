@@ -55,8 +55,13 @@ it('opens a station deep link by querying its parent lake', async () => {
 
 it('opens observations with the selected lake without inventing another identity', async () => {
   await mount(<LakeDetailScreen id={lakeId} />);
-  await fireEvent.press(await screen.findByRole('button', { name: 'Observaciones de terreno' }));
-  expect(router.push).toHaveBeenCalledWith({ pathname: '/lakes/[id]/observations', params: { id: lakeId } });
+  await fireEvent.press(
+    await screen.findByRole('button', { name: 'Observaciones de terreno' }),
+  );
+  expect(router.push).toHaveBeenCalledWith({
+    pathname: '/lakes/[id]/observations',
+    params: { id: lakeId },
+  });
 });
 
 it('shows an empty station list', async () => {
