@@ -1,11 +1,15 @@
-import { useId, useRef, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import { StyleSheet, Text, TextInput, View } from 'react-native';
 import { AppButton } from '../../components/AppButton';
 import { tokens } from '../../theme/tokens';
 import { DraftStatus } from './DraftStatus';
+import { PhotoPreview } from './PhotoPreview';
+import { captureServices } from './captureServices';
+import { CaptureError, captureMessage, type CaptureServices } from './captureTypes';
 import {
   formatObservationDate,
   observationDraftSchema,
+  completeObservationSchema,
   parseObservationDate,
   type ObservationValues,
   type StoredObservation,
@@ -18,6 +22,7 @@ type Props = {
   initial?: StoredObservation | null;
   durability: 'device' | 'session';
   onSave: (values: ObservationValues) => Promise<StoredObservation>;
+  capture?: CaptureServices;
 };
 
 export function ObservationForm({
@@ -26,6 +31,7 @@ export function ObservationForm({
   initial,
   durability,
   onSave,
+  capture = captureServices,
 }: Props) {
   const fieldId = useId();
   const dateLabelId = `observation-date-${fieldId}`;
@@ -36,6 +42,12 @@ export function ObservationForm({
     ),
   );
   const [note, setNote] = useState(initial?.values.note ?? '');
+  const [photoUri, setPhotoUri] = useState(initial?.values.photoUri ?? null);
+  const [location, setLocation] = useState(initial?.values.location ?? null);
+  const [capturing, setCapturing] = useState<'photo' | 'location' | null>(null);
+  const [captureNotice, setCaptureNotice] = useState<string | null>(null);
+  const active = useRef(true);
+  useEffect(() => { active.current = true; return () => { active.current = false; }; }, []);
   const [phase, setPhase] = useState<DraftPhase>(initial ? 'saved' : 'editing');
   const [savedAt, setSavedAt] = useState(initial?.savedAt ?? null);
   const [errors, setErrors] = useState<{
@@ -45,16 +57,42 @@ export function ObservationForm({
   }>({});
   const pending = useRef(false);
   const isSaving = phase === 'saving';
+  const busy = isSaving || capturing !== null;
 
-  async function save() {
+  async function captureField(kind: 'photo' | 'location') {
+    if (pending.current) return;
+    pending.current = true;
+    setCapturing(kind);
+    setCaptureNotice(null);
+    try {
+      if (kind === 'photo') {
+        const permission = await capture.cameraPermission();
+        if (!active.current) return;
+        if (!permission.granted) throw new CaptureError(permission.canAskAgain ? 'denied' : 'settings', permission.canAskAgain ? 'Cámara denegada. Puedes reintentar o continuar con el borrador sin foto.' : 'Habilita la cámara de AquaBloom en Ajustes para tomar una fotografía. Tus datos siguen aquí.');
+        const photo = await capture.takePhoto();
+        if (!active.current) return;
+        if (!photo) { setCaptureNotice('Captura cancelada. Conservamos la fotografía anterior y los demás campos.'); return; }
+        setPhotoUri(photo.uri);
+      } else {
+        const position = await capture.captureLocation();
+        if (!active.current) return;
+        setLocation(position);
+      }
+      setPhase('editing');
+      setErrors({});
+    } catch (error) { if (active.current) setCaptureNotice(captureMessage(error)); }
+    finally { pending.current = false; if (active.current) setCapturing(null); }
+  }
+
+  async function save(complete = false) {
     if (pending.current) return;
     const observedAt = parseObservationDate(dateText);
-    const result = observationDraftSchema.safeParse({
+    const result = (complete ? completeObservationSchema : observationDraftSchema).safeParse({
       lakeId,
       observedAt: observedAt ?? '',
       note,
-      location: initial?.values.location ?? null,
-      photoUri: initial?.values.photoUri ?? null,
+      location,
+      photoUri,
     });
     if (!result.success) {
       setErrors({
@@ -78,10 +116,13 @@ export function ObservationForm({
     setPhase('saving');
     try {
       const stored = await onSave(result.data);
+      if (!active.current) return;
       setSavedAt(stored.savedAt);
       setNote(stored.values.note);
+      setPhotoUri(stored.values.photoUri);
       setPhase('saved');
     } catch {
+      if (!active.current) return;
       setErrors({
         save: 'No pudimos guardar el borrador. Tus cambios siguen aquí; vuelve a intentarlo.',
       });
@@ -116,8 +157,8 @@ export function ObservationForm({
           accessibilityLabel="Fecha y hora de la observación"
           accessibilityLabelledBy={dateLabelId}
           aria-invalid={Boolean(errors.date)}
-          accessibilityState={{ disabled: isSaving }}
-          editable={!isSaving}
+          accessibilityState={{ disabled: busy }}
+          editable={!busy}
           autoCorrect={false}
           placeholder="AAAA-MM-DD HH:mm"
           value={dateText}
@@ -146,8 +187,8 @@ export function ObservationForm({
           accessibilityLabel="Nota de terreno"
           accessibilityLabelledBy={noteLabelId}
           aria-invalid={Boolean(errors.note)}
-          accessibilityState={{ disabled: isSaving }}
-          editable={!isSaving}
+          accessibilityState={{ disabled: busy }}
+          editable={!busy}
           multiline
           value={note}
           onChangeText={(value) => {
@@ -166,37 +207,36 @@ export function ObservationForm({
       </View>
       <View style={styles.reserved}>
         <Text accessibilityRole="header" style={styles.label}>
-          Ubicación y fotografía
+          Ubicación de terreno
         </Text>
         <Text style={styles.muted}>
-          Captura disponible en la semana 2. Puedes guardar este borrador
-          incompleto y continuarlo después.
+          Capturamos tu posición sólo al pulsar esta acción, para asociarla al lago. Puedes guardar un borrador incompleto si no autorizas la ubicación.
         </Text>
-        <AppButton disabled variant="secondary" onPress={() => {}}>
-          Capturar ubicación (próximamente)
-        </AppButton>
-        <AppButton disabled variant="secondary" onPress={() => {}}>
-          Tomar fotografía (próximamente)
+        {location ? <Text style={styles.muted}>Latitud: {location.latitude.toFixed(6)} · Longitud: {location.longitude.toFixed(6)} · Precisión: {location.accuracy.toFixed(1)} m</Text> : <Text style={styles.muted}>Sin ubicación capturada.</Text>}
+        <AppButton disabled={busy} variant="secondary" onPress={() => void captureField('location')}>
+          {location ? 'Actualizar ubicación' : 'Capturar ubicación'}
         </AppButton>
       </View>
+      <PhotoPreview uri={photoUri} busy={busy} onCapture={() => void captureField('photo')} />
+      {capturing ? <Text accessibilityLiveRegion="polite" style={styles.muted}>{capturing === 'photo' ? 'Capturando fotografía…' : 'Capturando ubicación…'}</Text> : null}
+      {captureNotice ? <Text accessibilityRole="alert" style={styles.muted}>{captureNotice}</Text> : null}
       {errors.save ? (
         <Text accessibilityRole="alert" style={styles.error}>
           {errors.save}
         </Text>
       ) : null}
       <AppButton
-        disabled={isSaving || phase === 'saved'}
+        disabled={busy || phase === 'saved'}
         accessibilityHint="Conserva un borrador local incompleto sin enviarlo al servidor"
         onPress={() => void save()}
       >
         {isSaving ? 'Guardando…' : 'Guardar borrador local'}
       </AppButton>
-      <AppButton disabled variant="secondary" onPress={() => {}}>
+      <AppButton disabled={busy || phase === 'saved' || !location || !photoUri} variant="secondary" onPress={() => void save(true)}>
         Finalizar observación
       </AppButton>
       <Text style={styles.muted}>
-        Para finalizar faltan ubicación y fotografía. El guardado local no envía
-        ni valida datos.
+        {location && photoUri ? 'La captura completa se guarda como borrador local pendiente de envío y validación.' : 'Para finalizar faltan ubicación y fotografía. El guardado local no envía ni valida datos.'}
       </Text>
     </View>
   );

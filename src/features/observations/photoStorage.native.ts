@@ -2,7 +2,8 @@ import { Directory, File, Paths } from 'expo-file-system';
 import { scopeSegment, type PhotoScope, type PhotoStorage } from './photoStorage';
 
 function directory(scope: PhotoScope) {
-  return new Directory(Paths.document, 'observation-photos-v1', scopeSegment(JSON.stringify([scope.apiScope, scope.ownerId])), scopeSegment(scope.draftId));
+  const segments = scopeSegment(JSON.stringify([scope.apiScope, scope.ownerId])).match(/.{1,96}/g)!;
+  return new Directory(Paths.document, 'observation-photos-v1', ...segments, scopeSegment(scope.draftId));
 }
 function managed(uri: string, scope: PhotoScope) {
   const parent = directory(scope).uri.replace(/\/$/, '');
