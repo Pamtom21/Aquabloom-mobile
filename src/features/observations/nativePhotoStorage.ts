@@ -42,7 +42,7 @@ export const nativePhotoStorage: PhotoStorage = {
     );
     try {
       source.copy(target);
-      if (!target.exists || target.size <= 0)
+      if (!target.exists || target.size <= 0 || target.size !== source.size)
         throw new Error('No se pudo conservar la fotografía.');
       return { uri: target.uri, created: true };
     } catch (error) {

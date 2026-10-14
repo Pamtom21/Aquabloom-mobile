@@ -1,8 +1,9 @@
-import { fireEvent, render, screen } from '@testing-library/react-native';
+import { act, fireEvent, render, screen } from '@testing-library/react-native';
 import { ObservationScreen } from '../ObservationScreen';
 import { useCurrentUser } from '../../auth/useCurrentUser';
 import { useLakeDetail } from '../../lakes/useLakeDetail';
 import { observationStore } from '../observationStore';
+import { photoPersistence } from '../photoPersistence';
 
 jest.mock('../../auth/useCurrentUser');
 jest.mock('../captureServices', () => ({
@@ -103,4 +104,47 @@ it('does not display the previous account form while the new account is loading'
   await view.rerender(<ObservationScreen lakeId={lakeId} />);
   expect(screen.queryByLabelText('Nota de terreno')).toBeNull();
   expect(screen.getByText('Preparando observación…')).toBeTruthy();
+});
+it('does not commit a prepared photograph after its editing session has ended', async () => {
+  const record = {
+    version: 1 as const,
+    id: lakeId,
+    ownerId: 'franco',
+    apiScope: 'test',
+    values: {
+      lakeId,
+      observedAt: '2026-10-14T12:00:00Z',
+      note: 'Original',
+      photoUri: 'file:///camera/photo.jpg',
+      location: null,
+    },
+    savedAt: '2026-10-14T12:01:00Z',
+    status: 'pending_send' as const,
+  };
+  jest.mocked(observationStore.latest).mockResolvedValueOnce(record);
+  let finish!: (value: { uri: string; created: boolean }) => void;
+  jest.mocked(photoPersistence.prepare).mockReturnValueOnce(
+    new Promise((resolve) => {
+      finish = resolve;
+    }),
+  );
+  jest.mocked(photoPersistence.removeCreated).mockResolvedValue();
+  const view = await render(<ObservationScreen lakeId={lakeId} />);
+  await screen.findByLabelText('Nota de terreno');
+  await fireEvent.changeText(
+    screen.getByLabelText('Nota de terreno'),
+    'Editada',
+  );
+  await fireEvent.press(
+    screen.getByRole('button', { name: 'Guardar borrador local' }),
+  );
+  await view.unmount();
+  await act(async () =>
+    finish({ uri: 'file:///documents/new.jpg', created: true }),
+  );
+  expect(observationStore.save).not.toHaveBeenCalled();
+  expect(photoPersistence.removeCreated).toHaveBeenCalledWith(
+    'file:///documents/new.jpg',
+    expect.objectContaining({ ownerId: 'franco', draftId: lakeId }),
+  );
 });

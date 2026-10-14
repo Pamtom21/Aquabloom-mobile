@@ -55,6 +55,7 @@ export function ObservationScreen({ lakeId }: { lakeId: string }) {
       });
     return () => {
       active = false;
+      id.current = null;
     };
   }, [apiScope, ownerId, lakeId, context, attempt]);
 
