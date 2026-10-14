@@ -70,7 +70,12 @@ export function ObservationScreen({ lakeId }: { lakeId: string }) {
       savedAt: new Date().toISOString(),
       status: 'pending_send',
     });
-    return saveObservation(record, observationStore, photoPersistence, () => id.current === record.id);
+    return saveObservation(
+      record,
+      observationStore,
+      photoPersistence,
+      () => id.current === record.id,
+    );
   }
 
   return (

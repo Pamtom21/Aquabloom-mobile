@@ -1,1 +1,1 @@
-export { nativePhotoStorage as photoPersistence } from './photoStorage.native';
+export { nativePhotoStorage as photoPersistence } from './nativePhotoStorage';

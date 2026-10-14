@@ -17,8 +17,18 @@ export function createCameraCapture(port: CameraPort) {
       const result = await port.launch();
       if (result.canceled) return null;
       const photo = result.assets?.[0];
-      if (!photo || !photo.uri.startsWith('file://') || !Number.isFinite(photo.width) || !Number.isFinite(photo.height) || photo.width <= 0 || photo.height <= 0) {
-        throw new CaptureError('invalid', 'La cámara no entregó una fotografía válida. Conservamos la foto anterior.');
+      if (
+        !photo ||
+        !photo.uri.startsWith('file://') ||
+        !Number.isFinite(photo.width) ||
+        !Number.isFinite(photo.height) ||
+        photo.width <= 0 ||
+        photo.height <= 0
+      ) {
+        throw new CaptureError(
+          'invalid',
+          'La cámara no entregó una fotografía válida. Conservamos la foto anterior.',
+        );
       }
       return photo;
     },

@@ -5,6 +5,16 @@ import { useLakeDetail } from '../../lakes/useLakeDetail';
 import { observationStore } from '../observationStore';
 
 jest.mock('../../auth/useCurrentUser');
+jest.mock('../captureServices', () => ({
+  captureServices: {
+    cameraPermission: jest.fn(),
+    takePhoto: jest.fn(),
+    captureLocation: jest.fn(),
+  },
+}));
+jest.mock('../photoPersistence', () => ({
+  photoPersistence: { prepare: jest.fn(), removeCreated: jest.fn() },
+}));
 jest.mock('../../lakes/useLakeDetail');
 jest.mock('../observationStore', () => ({
   observationStore: {

@@ -9,11 +9,16 @@ export type CaptureServices = {
   captureLocation: () => Promise<ObservationLocation>;
 };
 export class CaptureError extends Error {
-  constructor(public readonly kind: 'denied' | 'settings' | 'unavailable' | 'invalid', message: string) {
+  constructor(
+    public readonly kind: 'denied' | 'settings' | 'unavailable' | 'invalid',
+    message: string,
+  ) {
     super(message);
     this.name = 'CaptureError';
   }
 }
 export function captureMessage(error: unknown) {
-  return error instanceof CaptureError ? error.message : 'No pudimos completar la captura. Tus datos siguen aquí; vuelve a intentarlo.';
+  return error instanceof CaptureError
+    ? error.message
+    : 'No pudimos completar la captura. Tus datos siguen aquí; vuelve a intentarlo.';
 }

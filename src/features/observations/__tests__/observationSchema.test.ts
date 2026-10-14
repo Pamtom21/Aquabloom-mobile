@@ -76,3 +76,12 @@ it('rejects oversized notes without truncating the user input', () => {
       .success,
   ).toBe(false);
 });
+it.each([
+  'https://example.com/photo.jpg',
+  'data:image/jpeg;base64,AAA',
+  'file://',
+])('rejects nonlocal or empty photograph references: %s', (photoUri) => {
+  expect(observationDraftSchema.safeParse({ ...draft, photoUri }).success).toBe(
+    false,
+  );
+});
