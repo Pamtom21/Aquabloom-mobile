@@ -1,7 +1,7 @@
 # Sprint 2 móvil — Semana 2 de Franco
 
 Entrega del 14 de octubre de 2026 para **sprint 2 - movil**, hito
-**Semana 2 — Captura en terreno (8–14 de octubre)**. Sólo comprende las cuatro
+**Semana 2 — Fotografía, ubicación y captura offline (8–14 de octubre)**. Sólo comprende las cuatro
 tareas asignadas a Franco; no da por terminadas las dependencias de otros integrantes.
 
 | Issue                                                                                                      | Aceptación implementada                                                                                                 | Evidencia automatizada                                                                |
@@ -74,3 +74,18 @@ pnpm run export:android
 Node 24 y la introspección de manifiestos Android/iOS generados por Expo.
 La exportación Android sólo acredita JavaScript y assets, no la compilación
 de un APK ni funcionamiento del dispositivo.
+
+Resultado local del 14 de octubre de 2026, con Node 24 y pnpm 11.5.0:
+
+- `pnpm run check`: formato, ESLint y ambos proyectos TypeScript aprobados; 39 suites / 195 pruebas Jest, 24 pruebas SQLite y 2 comprobaciones de permisos generados aprobadas.
+- `pnpm run test:e2e`: 2 recorridos aprobados, incluida la conservación del formulario web al intentar captura no disponible, en viewport 390 × 844.
+- `pnpm run doctor`: 21 de 21 comprobaciones aprobadas tras actualizar cuatro parches compatibles del SDK 57.
+- `pnpm run export:android`: bundle Hermes de 4,8 MB, 1649 módulos y 30 assets, exportado correctamente.
+- `git diff --check`: sin errores de espacios ni marcadores de conflicto.
+
+Total: 223 pruebas aprobadas. La primera ejecución tras actualizar dependencias
+tuvo un timeout de 5 segundos en una prueba existente de autenticación; esa
+prueba pasó aislada (644 ms) y el control completo repetido terminó sin fallos.
+No se cambió su timeout ni se omitió la prueba. Las pruebas de cámara, GPS y
+FileSystem usan puertos simulados; SQLite sí se comprueba con archivos temporales
+y el motor real. No hubo captura física ni conexión de esos fixtures a servicios reales.
