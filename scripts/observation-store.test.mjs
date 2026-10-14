@@ -8,6 +8,7 @@ import {
   createDraftStore,
   createSessionDraftStore,
 } from '../src/features/observations/draftStore.ts';
+import { saveObservation } from '../src/features/observations/saveObservation.ts';
 
 const parse = (value) => value;
 const record = (overrides = {}) => ({
@@ -62,6 +63,67 @@ test('recovers the same pending draft after closing and reopening SQLite', async
   assert.deepEqual(
     await f.reopen().latest(input.apiScope, input.ownerId, input.values.lakeId),
     input,
+  );
+});
+test('persists complete capture fields and the durable photo reference after reopening SQLite', async (t) => {
+  const f = fixture(t);
+  const input = record({
+    values: {
+      ...record().values,
+      photoUri: 'file:///camera/temp.jpg',
+      location: {
+        latitude: -39.64,
+        longitude: -72.33,
+        accuracy: 5,
+        capturedAt: '2026-10-14T12:00:00Z',
+      },
+    },
+  });
+  const photos = {
+    async prepare() {
+      return { uri: 'file:///documents/managed.jpg', created: true };
+    },
+    async removeCreated() {
+      assert.fail('successful save must not remove its photo');
+    },
+  };
+  const saved = await saveObservation(input, f.store, photos);
+  const recovered = await f
+    .reopen()
+    .latest(input.apiScope, input.ownerId, input.values.lakeId);
+  assert.deepEqual(recovered, saved);
+  assert.equal(recovered.values.photoUri, 'file:///documents/managed.jpg');
+  assert.equal(recovered.status, 'pending_send');
+});
+test('a failed photo preparation preserves the preceding SQLite draft and its photograph', async (t) => {
+  const f = fixture(t);
+  const previous = record({
+    values: { ...record().values, photoUri: 'file:///documents/old.jpg' },
+  });
+  await f.store.save(previous);
+  const changed = record({
+    values: {
+      ...previous.values,
+      photoUri: 'file:///camera/missing.jpg',
+      note: 'Unsaved change',
+    },
+  });
+  await assert.rejects(
+    saveObservation(changed, f.store, {
+      async prepare() {
+        throw new Error('source missing');
+      },
+      async removeCreated() {
+        assert.fail('nothing was copied');
+      },
+    }),
+    /source missing/,
+  );
+  assert.deepEqual(
+    await f
+      .reopen()
+      .latest(previous.apiScope, previous.ownerId, previous.values.lakeId),
+    previous,
   );
 });
 test('updates a UUID without duplicating it and binds the note safely', async (t) => {
