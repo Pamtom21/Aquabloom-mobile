@@ -10,6 +10,8 @@ import { useLakeDetail } from '../lakes/useLakeDetail';
 import { OfflineNotice } from '../offline/OfflineNotice';
 import { ObservationForm } from './ObservationForm';
 import { observationStore } from './observationStore';
+import { photoPersistence } from './photoPersistence';
+import { saveObservation } from './saveObservation';
 import {
   storedObservationSchema,
   type ObservationValues,
@@ -53,6 +55,7 @@ export function ObservationScreen({ lakeId }: { lakeId: string }) {
       });
     return () => {
       active = false;
+      id.current = null;
     };
   }, [apiScope, ownerId, lakeId, context, attempt]);
 
@@ -68,8 +71,12 @@ export function ObservationScreen({ lakeId }: { lakeId: string }) {
       savedAt: new Date().toISOString(),
       status: 'pending_send',
     });
-    await observationStore.save(record);
-    return record;
+    return saveObservation(
+      record,
+      observationStore,
+      photoPersistence,
+      () => id.current === record.id,
+    );
   }
 
   return (

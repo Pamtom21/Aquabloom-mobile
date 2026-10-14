@@ -87,6 +87,24 @@ test('lake to authenticated observation, validation, local save and recovery', a
     .getByLabel('Nota de terreno', { exact: true })
     .fill('Nota de demostración guardada localmente');
   await page
+    .getByRole('button', { name: 'Tomar fotografía', exact: true })
+    .click();
+  await expect(
+    page.getByText(
+      'La captura de cámara y ubicación está disponible en Android/iOS. En web puedes editar el borrador de texto.',
+      { exact: true },
+    ),
+  ).toBeVisible();
+  await expect(
+    page.getByRole('textbox', { name: 'Nota de terreno', exact: true }),
+  ).toHaveValue('Nota de demostración guardada localmente');
+  await page
+    .getByRole('button', { name: 'Capturar ubicación', exact: true })
+    .click();
+  await expect(
+    page.getByRole('button', { name: 'Finalizar observación', exact: true }),
+  ).toBeDisabled();
+  await page
     .getByRole('button', { name: 'Guardar borrador local', exact: true })
     .click();
   await expect(

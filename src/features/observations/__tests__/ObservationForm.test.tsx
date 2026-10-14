@@ -4,6 +4,13 @@ import type {
   ObservationValues,
   StoredObservation,
 } from '../observationSchema';
+jest.mock('../captureServices', () => ({
+  captureServices: {
+    cameraPermission: jest.fn(),
+    takePhoto: jest.fn(),
+    captureLocation: jest.fn(),
+  },
+}));
 
 const lakeId = '11111111-1111-4111-8111-111111111111';
 function record(values: ObservationValues): StoredObservation {
@@ -33,7 +40,7 @@ async function mount(
   );
   return onSave;
 }
-it('shows the chosen lake and keeps capture/finalization disabled', async () => {
+it('shows the chosen lake and keeps finalization disabled until capture is complete', async () => {
   await mount();
   expect(
     screen.getByLabelText('Lago seleccionado: Lago Panguipulli'),
@@ -42,8 +49,8 @@ it('shows the chosen lake and keeps capture/finalization disabled', async () => 
     screen.getByRole('button', { name: 'Finalizar observación' }),
   ).toBeDisabled();
   expect(
-    screen.getByRole('button', { name: 'Tomar fotografía (próximamente)' }),
-  ).toBeDisabled();
+    screen.getByRole('button', { name: 'Tomar fotografía' }),
+  ).toBeEnabled();
   expect(screen.getByText('Sin envío al servidor · No validado')).toBeTruthy();
 });
 it('saves only valid input and returns to editing after a later change', async () => {

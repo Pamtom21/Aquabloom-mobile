@@ -13,16 +13,19 @@ export const observationLocationSchema = z.object({
 });
 
 // Saving a draft is allowed before camera/location capture. Completing it is not.
+const photoUriSchema = z
+  .string()
+  .regex(/^file:\/\/\/.+/, 'La fotografía debe ser un archivo local.');
 export const observationDraftSchema = z.object({
   lakeId: catalogId,
   observedAt: utcDate,
   note: z.string().trim().max(2000, 'La nota admite hasta 2000 caracteres.'),
   location: observationLocationSchema.nullable(),
-  photoUri: z.string().min(1).nullable(),
+  photoUri: photoUriSchema.nullable(),
 });
 export const completeObservationSchema = observationDraftSchema.extend({
   location: observationLocationSchema,
-  photoUri: z.string().min(1, 'Falta la fotografía.'),
+  photoUri: photoUriSchema,
 });
 export type ObservationValues = z.infer<typeof observationDraftSchema>;
 export const storedObservationSchema = z.object({

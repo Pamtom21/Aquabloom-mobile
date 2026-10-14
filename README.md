@@ -26,6 +26,11 @@ El formulario de observación, validación y estados locales del Sprint 2
 (AQU-251–254) está documentado en
 [Semana 1 — Franco](docs/sprint2-week1-franco.md).
 
+El permiso de cámara, captura única, vista previa/reemplazo y guardado de la
+observación con foto y ubicación (AQU-263–266) están documentados en
+[Semana 2 — Franco](docs/sprint2-week2-franco.md), incluidos los límites de
+validación nativa y los adaptadores de integración.
+
 ## Comenzar
 
 Comprueba las herramientas antes de instalar:
