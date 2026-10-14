@@ -27,6 +27,23 @@
       "expo-router",
       "expo-secure-store",
       "expo-sqlite",
+      [
+        "expo-image-picker",
+        {
+          "cameraPermission": "AquaBloom usa la cámara para adjuntar una fotografía a tu observación local de terreno.",
+          "microphonePermission": false,
+          "photosPermission": false
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "AquaBloom usa tu ubicación al pulsar Capturar ubicación para asociarla a la observación de terreno.",
+          "isIosBackgroundLocationEnabled": false,
+          "isAndroidBackgroundLocationEnabled": false,
+          "isAndroidForegroundServiceEnabled": false
+        }
+      ],
       "@maplibre/maplibre-react-native"
     ],
     "scheme": "aquabloom"
