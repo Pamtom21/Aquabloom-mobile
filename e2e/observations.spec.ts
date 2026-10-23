@@ -84,7 +84,7 @@ test('lake to authenticated observation, validation, local save and recovery', a
     .getByLabel('Fecha y hora de la observación', { exact: true })
     .fill('2026-10-07 14:30');
   await page
-    .getByLabel('Nota de terreno', { exact: true })
+    .getByRole('textbox', { name: 'Nota de terreno', exact: true })
     .fill('Nota de demostración guardada localmente');
   await page
     .getByRole('button', { name: 'Tomar fotografía', exact: true })
@@ -108,7 +108,9 @@ test('lake to authenticated observation, validation, local save and recovery', a
     .getByRole('button', { name: 'Guardar borrador local', exact: true })
     .click();
   await expect(
-    page.getByText('Guardado local · Pendiente de envío', { exact: true }),
+    page
+      .getByText('Guardado local · Pendiente de envío', { exact: true })
+      .filter({ visible: true }),
   ).toBeVisible();
   await expect(
     page.getByText('Sin envío al servidor · No validado', { exact: true }),
@@ -129,5 +131,91 @@ test('lake to authenticated observation, validation, local save and recovery', a
       .getByText(/Vista web: guardado sólo durante esta sesión/)
       .filter({ visible: true }),
   ).toBeVisible();
+  await page
+    .getByRole('button', { name: 'Nuevo borrador', exact: true })
+    .click();
+  await page
+    .getByRole('textbox', { name: 'Nota de terreno', exact: true })
+    .fill('Segundo borrador independiente');
+  await page
+    .getByRole('button', { name: 'Guardar borrador local', exact: true })
+    .click();
+  await expect(
+    page
+      .getByText('Guardado local · Pendiente de envío', { exact: true })
+      .filter({ visible: true }),
+  ).toBeVisible();
+  await page
+    .getByRole('button', { name: 'Ver borradores guardados', exact: true })
+    .click();
+  await expect(
+    page.getByRole('button', { name: /Abrir borrador del/ }),
+  ).toHaveCount(2);
+  await page
+    .getByRole('button', {
+      name: /Abrir borrador del.*Nota de demostración guardada localmente/,
+    })
+    .click();
+  await expect(
+    page.getByRole('textbox', { name: 'Nota de terreno', exact: true }),
+  ).toHaveValue('Nota de demostración guardada localmente');
+  await page
+    .getByRole('textbox', { name: 'Nota de terreno', exact: true })
+    .fill('Primera nota editada');
+  await page
+    .getByRole('button', { name: 'Guardar borrador local', exact: true })
+    .click();
+  await expect(
+    page
+      .getByText('Guardado local · Pendiente de envío', { exact: true })
+      .filter({ visible: true }),
+  ).toBeVisible();
+  await page
+    .getByRole('button', { name: 'Ver borradores guardados', exact: true })
+    .click();
+  await expect(
+    page.getByRole('button', { name: /Abrir borrador del/ }),
+  ).toHaveCount(2);
+  await page
+    .getByRole('button', { name: /Abrir borrador del.*Primera nota editada/ })
+    .click();
+  await page
+    .getByRole('button', { name: 'Eliminar borrador', exact: true })
+    .click();
+  await page
+    .getByRole('button', { name: 'Conservar borrador', exact: true })
+    .click();
+  await expect(
+    page.getByRole('textbox', { name: 'Nota de terreno', exact: true }),
+  ).toHaveValue('Primera nota editada');
+  await page
+    .getByRole('button', { name: 'Eliminar borrador', exact: true })
+    .click();
+  await page
+    .getByRole('button', { name: 'Confirmar eliminación', exact: true })
+    .click();
+  await expect(
+    page.getByText('Borrador y fotografías locales eliminados.', {
+      exact: true,
+    }),
+  ).toBeVisible();
+  await page
+    .getByRole('button', { name: 'Ver borradores guardados', exact: true })
+    .click();
+  await expect(
+    page.getByRole('button', { name: /Abrir borrador del/ }),
+  ).toHaveCount(1);
+  await page
+    .getByRole('button', {
+      name: /Abrir borrador del.*Segundo borrador independiente/,
+    })
+    .click();
+  await expect(
+    page.getByRole('textbox', { name: 'Nota de terreno', exact: true }),
+  ).toHaveValue('Segundo borrador independiente');
+  await page.screenshot({
+    path: testInfo.outputPath('drafts-recovered.png'),
+    fullPage: true,
+  });
   expect(writes).toEqual([]);
 });

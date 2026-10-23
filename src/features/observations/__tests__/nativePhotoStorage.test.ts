@@ -14,6 +14,15 @@ jest.mock('expo-file-system', () => {
       this.uri = uri(parts);
     }
     create() {}
+    get exists() {
+      return [...mockFiles.keys()].some((path) =>
+        path.startsWith(this.uri + '/'),
+      );
+    }
+    delete() {
+      for (const path of mockFiles.keys())
+        if (path.startsWith(this.uri + '/')) mockFiles.delete(path);
+    }
   }
   class File {
     uri: string;
@@ -97,4 +106,37 @@ it('rollback cannot remove camera sources or another account photo', async () =>
 });
 it('encodes path traversal characters instead of creating filesystem segments', () => {
   expect(scopeSegment('../owner/../../api')).toMatch(/^[0-9a-f]+$/);
+});
+it('deletes all replacements of one draft while preserving other drafts, accounts and API scopes', async () => {
+  const first = await nativePhotoStorage.prepare(
+    'file:///cache/photo.jpg',
+    scope,
+  );
+  const replacement = await nativePhotoStorage.prepare(
+    'file:///cache/photo.jpg',
+    scope,
+  );
+  const otherDraft = await nativePhotoStorage.prepare(
+    'file:///cache/photo.jpg',
+    { ...scope, draftId: 'another-draft' },
+  );
+  const otherUser = await nativePhotoStorage.prepare(
+    'file:///cache/photo.jpg',
+    { ...scope, ownerId: 'other' },
+  );
+  const otherApi = await nativePhotoStorage.prepare('file:///cache/photo.jpg', {
+    ...scope,
+    apiScope: 'another-api',
+  });
+  await nativePhotoStorage.removeDraft(scope);
+  expect(mockFiles.has(first.uri)).toBe(false);
+  expect(mockFiles.has(replacement.uri)).toBe(false);
+  for (const uri of [
+    otherDraft.uri,
+    otherUser.uri,
+    otherApi.uri,
+    'file:///cache/photo.jpg',
+  ])
+    expect(mockFiles.has(uri)).toBe(true);
+  await expect(nativePhotoStorage.removeDraft(scope)).resolves.toBeUndefined();
 });

@@ -1,7 +1,16 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { DatabaseSync } from 'node:sqlite';
-import { mkdtempSync, rmSync } from 'node:fs';
+import {
+  mkdtempSync,
+  rmSync,
+  writeFileSync,
+  copyFileSync,
+  existsSync,
+  mkdirSync,
+  readFileSync,
+} from 'node:fs';
+import { pathToFileURL, fileURLToPath } from 'node:url';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import {
@@ -9,6 +18,7 @@ import {
   createSessionDraftStore,
 } from '../src/features/observations/draftStore.ts';
 import { saveObservation } from '../src/features/observations/saveObservation.ts';
+import { deleteObservation } from '../src/features/observations/deleteObservation.ts';
 
 const parse = (value) => value;
 const record = (overrides = {}) => ({
@@ -41,12 +51,16 @@ function fixture(t) {
     async getFirstAsync(sql, ...params) {
       return database.prepare(sql).get(...params) ?? null;
     },
+    async getAllAsync(sql, ...params) {
+      return database.prepare(sql).all(...params);
+    },
   };
   t.after(() => {
     database.close();
     rmSync(directory, { recursive: true });
   });
   return {
+    directory,
     adapter,
     store: createDraftStore(async () => adapter, parse),
     reopen() {
@@ -63,6 +77,229 @@ test('recovers the same pending draft after closing and reopening SQLite', async
   assert.deepEqual(
     await f.reopen().latest(input.apiScope, input.ownerId, input.values.lakeId),
     input,
+  );
+});
+
+test('migrates a v1 draft transactionally, preserves payload and existing catalog cache', async (t) => {
+  const f = fixture(t);
+  const input = record({
+    values: {
+      ...record().values,
+      observedAt: '2026-10-14T09:00:00-03:00',
+      photoUri: 'file:///documents/old.jpg',
+      location: {
+        latitude: -39.6,
+        longitude: -72.3,
+        accuracy: 4,
+        capturedAt: '2026-10-14T12:00:00Z',
+      },
+    },
+  });
+  await f.adapter
+    .execAsync(`CREATE TABLE observation_form_drafts (api_scope TEXT NOT NULL, owner_id TEXT NOT NULL, id TEXT NOT NULL, lake_id TEXT NOT NULL, payload TEXT NOT NULL, saved_at TEXT NOT NULL, PRIMARY KEY (api_scope, owner_id, id));
+    CREATE TABLE catalog_cache (payload TEXT); INSERT INTO catalog_cache VALUES ('catalog preserved'); PRAGMA user_version = 1;`);
+  await f.adapter.runAsync(
+    'INSERT INTO observation_form_drafts VALUES (?, ?, ?, ?, ?, ?)',
+    input.apiScope,
+    input.ownerId,
+    input.id,
+    input.values.lakeId,
+    JSON.stringify(input),
+    input.savedAt,
+  );
+  assert.deepEqual(
+    await f.store.latest(input.apiScope, input.ownerId, input.values.lakeId),
+    input,
+  );
+  const row = await f.adapter.getFirstAsync(
+    'SELECT * FROM observation_form_drafts',
+  );
+  assert.equal(row.observed_at, '2026-10-14T12:00:00.000Z');
+  assert.equal(row.latitude, -39.6);
+  assert.equal(row.longitude, -72.3);
+  assert.equal(row.accuracy, 4);
+  assert.equal(row.note, input.values.note);
+  assert.equal(row.photo_uri, input.values.photoUri);
+  assert.equal(row.local_status, 'pending_send');
+  assert.equal(
+    (await f.adapter.getFirstAsync('PRAGMA user_version')).user_version,
+    2,
+  );
+  assert.equal(
+    (await f.adapter.getFirstAsync('SELECT payload FROM catalog_cache'))
+      .payload,
+    'catalog preserved',
+  );
+  assert.deepEqual(
+    await f.reopen().list(input.apiScope, input.ownerId, input.values.lakeId),
+    [input],
+  );
+});
+
+test('failed migration rolls back columns and version without destroying the old draft', async (t) => {
+  const f = fixture(t);
+  await f.adapter
+    .execAsync(`CREATE TABLE observation_form_drafts (api_scope TEXT NOT NULL, owner_id TEXT NOT NULL, id TEXT NOT NULL, lake_id TEXT NOT NULL, payload TEXT NOT NULL, saved_at TEXT NOT NULL, PRIMARY KEY (api_scope, owner_id, id));
+    INSERT INTO observation_form_drafts VALUES ('a','b','c','d','{broken','date'); PRAGMA user_version = 1;`);
+  await assert.rejects(f.store.latest('a', 'b', 'd'), /malformed JSON/);
+  assert.equal(
+    (await f.adapter.getFirstAsync('PRAGMA user_version')).user_version,
+    1,
+  );
+  assert.equal(
+    (
+      await f.adapter.getFirstAsync(
+        'SELECT payload FROM observation_form_drafts',
+      )
+    ).payload,
+    '{broken',
+  );
+  assert.equal(
+    (
+      await f.adapter.getAllAsync('PRAGMA table_info(observation_form_drafts)')
+    ).some((column) => column.name === 'observed_at'),
+    false,
+  );
+});
+
+test('lists all own drafts after restart and deletes only the selected owner/API/UUID', async (t) => {
+  const f = fixture(t);
+  const first = record();
+  const second = record({
+    id: '33333333-3333-4333-8333-333333333333',
+    savedAt: '2026-10-14T12:00:00Z',
+  });
+  await f.store.save(first);
+  await f.store.save(second);
+  await f.store.save(record({ ownerId: 'other' }));
+  await f.store.save(record({ apiScope: 'other-api' }));
+  const reopened = f.reopen();
+  assert.deepEqual(
+    await reopened.list(first.apiScope, first.ownerId, first.values.lakeId),
+    [second, first],
+  );
+  assert.deepEqual(
+    await reopened.list(first.apiScope, 'signed-out', first.values.lakeId),
+    [],
+  );
+  await reopened.remove(first.apiScope, first.ownerId, first.id);
+  await reopened.remove(first.apiScope, first.ownerId, first.id);
+  assert.deepEqual(
+    await reopened.list(first.apiScope, first.ownerId, first.values.lakeId),
+    [second],
+  );
+  assert.equal(
+    (await reopened.latest(first.apiScope, 'other', first.values.lakeId))
+      .ownerId,
+    'other',
+  );
+  assert.equal(
+    (await reopened.latest('other-api', first.ownerId, first.values.lakeId))
+      .apiScope,
+    'other-api',
+  );
+});
+
+test('offline capture with a real photo survives SQLite restart and deletes only its managed directory', async (t) => {
+  const f = fixture(t);
+  const temporary = join(f.directory, 'camera.jpg');
+  writeFileSync(temporary, 'photo fixture bytes');
+  const scopeDirectory = (scope) =>
+    join(f.directory, 'documents', scope.ownerId, scope.draftId);
+  const photos = {
+    async prepare(uri, scope) {
+      const dir = scopeDirectory(scope);
+      mkdirSync(dir, { recursive: true });
+      const target = join(dir, 'photo.jpg');
+      if (fileURLToPath(uri) === target) return { uri, created: false };
+      copyFileSync(fileURLToPath(uri), target);
+      return { uri: pathToFileURL(target).href, created: true };
+    },
+    async removeCreated(uri) {
+      rmSync(fileURLToPath(uri));
+    },
+    async removeDraft(scope) {
+      rmSync(scopeDirectory(scope), { recursive: true, force: true });
+    },
+  };
+  const input = record({
+    values: {
+      ...record().values,
+      photoUri: pathToFileURL(temporary).href,
+      location: {
+        latitude: -39.6,
+        longitude: -72.3,
+        accuracy: 5,
+        capturedAt: '2026-10-14T12:00:00Z',
+      },
+    },
+  });
+  const saved = await saveObservation(input, f.store, photos);
+  await saveObservation(saved, f.store, photos);
+  await saveObservation({ ...input, ownerId: 'other' }, f.store, photos);
+  rmSync(temporary);
+  const reopened = f.reopen();
+  const recovered = await reopened.latest(
+    saved.apiScope,
+    saved.ownerId,
+    saved.values.lakeId,
+  );
+  assert.deepEqual(recovered, saved);
+  assert.equal(
+    readFileSync(fileURLToPath(recovered.values.photoUri), 'utf8'),
+    'photo fixture bytes',
+  );
+  assert.equal(
+    (await reopened.list(saved.apiScope, saved.ownerId, saved.values.lakeId))
+      .length,
+    1,
+  );
+  const other = await reopened.latest(
+    saved.apiScope,
+    'other',
+    saved.values.lakeId,
+  );
+  await deleteObservation(
+    { apiScope: saved.apiScope, ownerId: saved.ownerId, draftId: saved.id },
+    reopened,
+    photos,
+  );
+  assert.equal(
+    await reopened.latest(saved.apiScope, saved.ownerId, saved.values.lakeId),
+    null,
+  );
+  assert.equal(existsSync(fileURLToPath(saved.values.photoUri)), false);
+  assert.equal(existsSync(fileURLToPath(other.values.photoUri)), true);
+});
+
+test('session adapter supports multiple scoped drafts and selected deletion', async () => {
+  const store = createSessionDraftStore(parse);
+  await store.save(record());
+  await store.save(record({ ownerId: 'other' }));
+  await store.remove('other-api', record().ownerId, record().id);
+  assert.equal(
+    (
+      await store.list(
+        record().apiScope,
+        record().ownerId,
+        record().values.lakeId,
+      )
+    ).length,
+    1,
+  );
+  await store.remove(record().apiScope, record().ownerId, record().id);
+  assert.deepEqual(
+    await store.list(
+      record().apiScope,
+      record().ownerId,
+      record().values.lakeId,
+    ),
+    [],
+  );
+  assert.equal(
+    (await store.list(record().apiScope, 'other', record().values.lakeId))
+      .length,
+    1,
   );
 });
 test('persists complete capture fields and the durable photo reference after reopening SQLite', async (t) => {
@@ -219,11 +456,11 @@ test('retries opening storage after failure and does not downgrade a newer schem
   }, parse);
   await assert.rejects(store.save(record()), /disk unavailable/);
   await store.save(record());
-  await f.adapter.execAsync('PRAGMA user_version = 2');
+  await f.adapter.execAsync('PRAGMA user_version = 3');
   await assert.rejects(f.reopen().save(record()), /no compatible/);
   assert.equal(
     (await f.adapter.getFirstAsync('PRAGMA user_version')).user_version,
-    2,
+    3,
   );
 });
 test('browser adapter declares session storage and isolates identities', async () => {
