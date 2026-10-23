@@ -4,8 +4,8 @@ import type { StoredObservation } from './observationSchema';
 
 export async function saveObservation(
   record: StoredObservation,
-  store: ObservationStore,
-  photos: PhotoStorage,
+  store: Pick<ObservationStore, 'save'>,
+  photos: Pick<PhotoStorage, 'prepare' | 'removeCreated'>,
   isActive: () => boolean = () => true,
 ): Promise<StoredObservation> {
   if (!isActive()) throw new Error('La sesión de captura cambió.');
