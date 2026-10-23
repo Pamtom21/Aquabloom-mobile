@@ -4,4 +4,4 @@ allowBuilds:
   unrs-resolver: false
 overrides:
   # Keep Router's transitive peer contexts on the same SDK 57 runtime.
-  '@expo/metro-runtime': ~57.0.16
+  '@expo/metro-runtime': ~57.0.17
