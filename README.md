@@ -1,5 +1,7 @@
 # AquaBloom Mobile
 
+La política de integración y entrega continua está documentada en [CI y CD móvil](docs/ci-cd.md).
+
 Aplicación móvil de AquaBloom Sur construida con Expo SDK 57, React Native 0.86,
 Expo Router y TypeScript estricto. El Sprint 1 cubre autenticación, catálogo,
 mapa, detalle de lagos, comportamiento offline y preparación Android.
