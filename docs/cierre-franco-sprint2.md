@@ -69,3 +69,9 @@ loading**. La integración directa se ofreció como alternativa, pero aún no
 estaba conectada al redactar esta evidencia. GitHub y el repositorio local sí
 estaban accesibles. Si continúa el fallo, quedan pendientes los comentarios y
 estados manuales de Linear; no se debe afirmar que todas las tarjetas cambiaron.
+
+Como vía adicional se enlazan los seis entregables mediante palabras de cierre
+en la descripción del PR, según la [integración oficial de Linear con GitHub](https://linear.app/docs/github).
+Se excluyen explícitamente las dos verificaciones físicas de esa automatización.
+El merge solicita el cierre según la configuración del equipo; sin acceso a
+Linear no se declara verificado el estado resultante de las tarjetas.
