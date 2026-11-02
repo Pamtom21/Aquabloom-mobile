@@ -38,6 +38,8 @@ La demostración local es optativa y siempre está rotulada como sintética;
 las rutas científicas propuestas permanecen deshabilitadas por defecto.
 Las verificaciones físicas AQU-288–289 están
 [preparadas pero pendientes de Android](docs/verificacion-android-franco.md).
+La matriz de aceptación, las 296 pruebas y los límites de cierre están en
+[Cierre de Franco — Sprint 2](docs/cierre-franco-sprint2.md).
 
 La persistencia de borradores, recuperación, edición y eliminación con fotos
 (AQU-255–258 y AQU-267–270) está documentada en
