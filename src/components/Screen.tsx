@@ -1,6 +1,8 @@
 import type { PropsWithChildren } from 'react';
 import {
   ScrollView,
+  KeyboardAvoidingView,
+  Platform,
   StyleSheet,
   Text,
   useWindowDimensions,
@@ -22,22 +24,28 @@ export function Screen({
       style={styles.safe}
       edges={['left', 'right', 'bottom']}
     >
-      <ScrollView
-        contentContainerStyle={[
-          styles.content,
-          { paddingHorizontal: layout.horizontalPadding },
-        ]}
-        keyboardShouldPersistTaps="handled"
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
-        <Text
-          accessibilityRole="header"
-          maxFontSizeMultiplier={2}
-          style={[styles.title, layout.isCompact && styles.compactTitle]}
+        <ScrollView
+          contentContainerStyle={[
+            styles.content,
+            { paddingHorizontal: layout.horizontalPadding },
+          ]}
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
         >
-          {title}
-        </Text>
-        {children}
-      </ScrollView>
+          <Text
+            accessibilityRole="header"
+            maxFontSizeMultiplier={2}
+            style={[styles.title, layout.isCompact && styles.compactTitle]}
+          >
+            {title}
+          </Text>
+          {children}
+        </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }

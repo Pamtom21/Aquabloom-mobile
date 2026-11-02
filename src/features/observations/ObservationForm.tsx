@@ -181,6 +181,12 @@ export function ObservationForm({
         fotografía no constituye una medición validada.
       </Text>
       <DraftStatus phase={phase} savedAt={savedAt} durability={durability} />
+      {!location || !photoUri || unavailablePhotoUri === photoUri ? (
+        <Text accessibilityLiveRegion="polite" style={styles.muted}>
+          Borrador incompleto: falta fotografía disponible y/o ubicación. No es
+          una captura finalizada.
+        </Text>
+      ) : null}
       <View style={styles.field}>
         <Text nativeID={dateLabelId} style={styles.label}>
           Fecha y hora de la observación
@@ -192,6 +198,7 @@ export function ObservationForm({
           accessibilityState={{ disabled: busy }}
           editable={!busy}
           autoCorrect={false}
+          returnKeyType="done"
           placeholder="AAAA-MM-DD HH:mm"
           value={dateText}
           onChangeText={(value) => {
@@ -222,6 +229,7 @@ export function ObservationForm({
           accessibilityState={{ disabled: busy }}
           editable={!busy}
           multiline
+          textAlignVertical="top"
           value={note}
           onChangeText={(value) => {
             setNote(value);
