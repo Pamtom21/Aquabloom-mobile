@@ -24,6 +24,10 @@ function managed(uri: string, scope: PhotoScope) {
   );
 }
 export const nativePhotoStorage: PhotoStorage = {
+  async removeDraft(scope) {
+    const dir = directory(scope);
+    if (dir.exists) dir.delete();
+  },
   async prepare(uri, scope) {
     if (!uri.startsWith('file://'))
       throw new Error('La fotografía debe ser un archivo local.');

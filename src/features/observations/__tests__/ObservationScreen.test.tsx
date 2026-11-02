@@ -14,7 +14,11 @@ jest.mock('../captureServices', () => ({
   },
 }));
 jest.mock('../photoPersistence', () => ({
-  photoPersistence: { prepare: jest.fn(), removeCreated: jest.fn() },
+  photoPersistence: {
+    prepare: jest.fn(),
+    removeCreated: jest.fn(),
+    removeDraft: jest.fn(),
+  },
 }));
 jest.mock('../../lakes/useLakeDetail');
 jest.mock('../observationStore', () => ({
@@ -22,6 +26,8 @@ jest.mock('../observationStore', () => ({
     durability: 'device',
     latest: jest.fn(),
     save: jest.fn(),
+    list: jest.fn(),
+    remove: jest.fn(),
   },
 }));
 jest.mock('expo-router', () => ({
@@ -41,6 +47,101 @@ beforeEach(() => {
   } as ReturnType<typeof useLakeDetail>);
   jest.mocked(observationStore.latest).mockReset().mockResolvedValue(null);
   jest.mocked(observationStore.save).mockReset().mockResolvedValue();
+  jest.mocked(observationStore.list).mockReset().mockResolvedValue([]);
+  jest.mocked(observationStore.remove).mockReset().mockResolvedValue();
+  jest.mocked(photoPersistence.removeDraft).mockReset().mockResolvedValue();
+});
+
+const recovered = {
+  version: 1 as const,
+  id: lakeId,
+  ownerId: 'franco',
+  apiScope: 'test',
+  values: {
+    lakeId,
+    observedAt: '2026-10-14T12:00:00Z',
+    note: 'Nota recuperada',
+    photoUri: 'file:///documents/persisted.jpg',
+    location: null,
+  },
+  savedAt: '2026-10-14T12:01:00Z',
+  status: 'pending_send' as const,
+};
+it('recovers saved fields without catalog connectivity and reports a missing photo as replaceable', async () => {
+  jest.mocked(observationStore.latest).mockResolvedValue(recovered);
+  jest.mocked(useLakeDetail).mockReturnValue({
+    data: undefined,
+    isError: true,
+    isPending: false,
+    error: new Error('offline'),
+  } as ReturnType<typeof useLakeDetail>);
+  await render(<ObservationScreen lakeId={lakeId} />);
+  expect(await screen.findByDisplayValue('Nota recuperada')).toBeTruthy();
+  await fireEvent(
+    screen.getByLabelText('Vista previa de la fotografía de terreno'),
+    'error',
+  );
+  expect(screen.getByText(/La fotografía no está disponible/)).toBeTruthy();
+  expect(
+    screen.getByRole('button', { name: 'Reemplazar fotografía' }),
+  ).toBeTruthy();
+});
+it('lists own saved drafts, selects one and starts a separate UUID for a new draft', async () => {
+  jest.mocked(observationStore.list).mockResolvedValue([recovered]);
+  await render(<ObservationScreen lakeId={lakeId} />);
+  await screen.findByLabelText('Nota de terreno');
+  await fireEvent.press(
+    screen.getByRole('button', { name: 'Ver borradores guardados' }),
+  );
+  await fireEvent.press(
+    await screen.findByRole('button', { name: /Abrir borrador del/ }),
+  );
+  expect(screen.getByDisplayValue('Nota recuperada')).toBeTruthy();
+  await fireEvent.press(screen.getByRole('button', { name: 'Nuevo borrador' }));
+  await fireEvent.changeText(
+    screen.getByLabelText('Nota de terreno'),
+    'Nueva nota',
+  );
+  await fireEvent.press(
+    screen.getByRole('button', { name: 'Guardar borrador local' }),
+  );
+  await screen.findByText('Guardado local · Pendiente de envío');
+  expect(jest.mocked(observationStore.save).mock.calls.at(-1)![0].id).not.toBe(
+    recovered.id,
+  );
+});
+it('requires confirmation to delete, preserves the record on cancellation and allows retry after failure', async () => {
+  jest.mocked(observationStore.latest).mockResolvedValue(recovered);
+  await render(<ObservationScreen lakeId={lakeId} />);
+  await fireEvent.press(
+    await screen.findByRole('button', { name: 'Eliminar borrador' }),
+  );
+  expect(observationStore.remove).not.toHaveBeenCalled();
+  await fireEvent.press(
+    screen.getByRole('button', { name: 'Conservar borrador' }),
+  );
+  expect(screen.getByDisplayValue('Nota recuperada')).toBeTruthy();
+  await fireEvent.press(
+    screen.getByRole('button', { name: 'Eliminar borrador' }),
+  );
+  jest
+    .mocked(photoPersistence.removeDraft)
+    .mockRejectedValueOnce(new Error('filesystem'));
+  await fireEvent.press(
+    screen.getByRole('button', { name: 'Confirmar eliminación' }),
+  );
+  await screen.findByText(/No pudimos terminar de eliminar/);
+  expect(observationStore.remove).not.toHaveBeenCalled();
+  await fireEvent.press(
+    screen.getByRole('button', { name: 'Confirmar eliminación' }),
+  );
+  await screen.findByText('Borrador y fotografías locales eliminados.');
+  expect(observationStore.remove).toHaveBeenCalledWith(
+    expect.any(String),
+    'franco',
+    lakeId,
+  );
+  expect(screen.queryByDisplayValue('Nota recuperada')).toBeNull();
 });
 it('keeps the same UUID across saves and associates it with the actual owner and lake', async () => {
   await render(<ObservationScreen lakeId={lakeId} />);
@@ -104,6 +205,36 @@ it('does not display the previous account form while the new account is loading'
   await view.rerender(<ObservationScreen lakeId={lakeId} />);
   expect(screen.queryByLabelText('Nota de terreno')).toBeNull();
   expect(screen.getByText('Preparando observación…')).toBeTruthy();
+});
+it('hides notes and photo references on account switch and recovers them when the owner returns', async () => {
+  jest
+    .mocked(observationStore.latest)
+    .mockResolvedValueOnce(recovered)
+    .mockResolvedValueOnce(null)
+    .mockResolvedValueOnce(recovered);
+  const view = await render(<ObservationScreen lakeId={lakeId} />);
+  expect(await screen.findByDisplayValue('Nota recuperada')).toBeTruthy();
+  jest
+    .mocked(useCurrentUser)
+    .mockReturnValue({ user: { id: 'other' }, status: 'ready' } as ReturnType<
+      typeof useCurrentUser
+    >);
+  await view.rerender(<ObservationScreen lakeId={lakeId} />);
+  await screen.findByLabelText('Nota de terreno');
+  expect(screen.queryByDisplayValue('Nota recuperada')).toBeNull();
+  expect(
+    screen.queryByLabelText('Vista previa de la fotografía de terreno'),
+  ).toBeNull();
+  jest
+    .mocked(useCurrentUser)
+    .mockReturnValue({ user: { id: 'franco' }, status: 'ready' } as ReturnType<
+      typeof useCurrentUser
+    >);
+  await view.rerender(<ObservationScreen lakeId={lakeId} />);
+  expect(await screen.findByDisplayValue('Nota recuperada')).toBeTruthy();
+  expect(
+    screen.getByLabelText('Vista previa de la fotografía de terreno'),
+  ).toBeTruthy();
 });
 it('does not commit a prepared photograph after its editing session has ended', async () => {
   const record = {

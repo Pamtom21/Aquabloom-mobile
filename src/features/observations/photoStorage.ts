@@ -5,6 +5,7 @@ export type PhotoStorage = {
     scope: PhotoScope,
   ) => Promise<{ uri: string; created: boolean }>;
   removeCreated: (uri: string, scope: PhotoScope) => Promise<void>;
+  removeDraft: (scope: PhotoScope) => Promise<void>;
 };
 // Hex segments cannot inject slashes or dot segments into a managed directory.
 export function scopeSegment(value: string) {

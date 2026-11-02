@@ -27,6 +27,7 @@ type Props = {
   durability: 'device' | 'session';
   onSave: (values: ObservationValues) => Promise<StoredObservation>;
   capture?: CaptureServices;
+  disabled?: boolean;
 };
 
 export function ObservationForm({
@@ -36,6 +37,7 @@ export function ObservationForm({
   durability,
   onSave,
   capture = captureServices,
+  disabled = false,
 }: Props) {
   const fieldId = useId();
   const dateLabelId = `observation-date-${fieldId}`;
@@ -69,10 +71,10 @@ export function ObservationForm({
   }>({});
   const pending = useRef(false);
   const isSaving = phase === 'saving';
-  const busy = isSaving || capturing !== null;
+  const busy = disabled || isSaving || capturing !== null;
 
   async function captureField(kind: 'photo' | 'location') {
-    if (pending.current) return;
+    if (pending.current || disabled) return;
     pending.current = true;
     setCapturing(kind);
     setCaptureNotice(null);
@@ -113,7 +115,7 @@ export function ObservationForm({
   }
 
   async function save(complete = false) {
-    if (pending.current) return;
+    if (pending.current || disabled) return;
     const observedAt = parseObservationDate(dateText);
     const result = (
       complete ? completeObservationSchema : observationDraftSchema

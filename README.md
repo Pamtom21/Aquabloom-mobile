@@ -31,6 +31,10 @@ observación con foto y ubicación (AQU-263–266) están documentados en
 [Semana 2 — Franco](docs/sprint2-week2-franco.md), incluidos los límites de
 validación nativa y los adaptadores de integración.
 
+La persistencia de borradores, recuperación, edición y eliminación con fotos
+(AQU-255–258 y AQU-267–270) está documentada en
+[Semanas 1 y 2 — Jose Jimenez](docs/sprint2-jose-semanas1-2.md).
+
 ## Comenzar
 
 Comprueba las herramientas antes de instalar:
