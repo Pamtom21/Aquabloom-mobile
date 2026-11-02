@@ -110,6 +110,80 @@ it('cancels a replacement without discarding the old photo, note or timestamp', 
     ),
   ).toBeTruthy();
 });
+
+it.each(['denied', 'settings'] as const)(
+  'preserves fields after GPS %s and never confirms a complete capture',
+  async (kind) => {
+    const { capture, save } = await fixture();
+    capture.captureLocation.mockRejectedValueOnce(
+      new CaptureError(
+        kind,
+        'Ubicación no autorizada. Puedes continuar con el borrador.',
+      ),
+    );
+    await fireEvent.changeText(
+      screen.getByLabelText('Nota de terreno'),
+      'Conservar ante rechazo GPS',
+    );
+    const date = screen.getByLabelText('Fecha y hora de la observación').props
+      .value;
+    await fireEvent.press(
+      screen.getByRole('button', { name: 'Tomar fotografía' }),
+    );
+    await fireEvent.press(
+      screen.getByRole('button', { name: 'Capturar ubicación' }),
+    );
+    expect(screen.getByLabelText('Nota de terreno').props.value).toBe(
+      'Conservar ante rechazo GPS',
+    );
+    expect(
+      screen.getByLabelText('Fecha y hora de la observación').props.value,
+    ).toBe(date);
+    expect(
+      screen.getByLabelText('Vista previa de la fotografía de terreno').props
+        .source.uri,
+    ).toBe(photo.uri);
+    expect(
+      screen.getByText(
+        'Ubicación no autorizada. Puedes continuar con el borrador.',
+      ),
+    ).toBeTruthy();
+    expect(
+      screen.getByRole('button', { name: 'Finalizar observación' }),
+    ).toBeDisabled();
+    expect(save).not.toHaveBeenCalled();
+    await fireEvent.press(
+      screen.getByRole('button', { name: 'Guardar borrador local' }),
+    );
+    expect(save.mock.calls[0][0].location).toBeNull();
+    expect(
+      screen.getByText(/Borrador incompleto: falta fotografía disponible/),
+    ).toBeTruthy();
+  },
+);
+
+it('cancels the initial camera capture without saving, losing fields or enabling finalization', async () => {
+  const { capture, save } = await fixture();
+  capture.takePhoto.mockResolvedValueOnce(null);
+  await fireEvent.changeText(
+    screen.getByLabelText('Nota de terreno'),
+    'Primera captura cancelada',
+  );
+  await fireEvent.press(
+    screen.getByRole('button', { name: 'Tomar fotografía' }),
+  );
+  expect(screen.getByLabelText('Nota de terreno').props.value).toBe(
+    'Primera captura cancelada',
+  );
+  expect(
+    screen.queryByLabelText('Vista previa de la fotografía de terreno'),
+  ).toBeNull();
+  expect(
+    screen.getByRole('button', { name: 'Finalizar observación' }),
+  ).toBeDisabled();
+  expect(save).not.toHaveBeenCalled();
+  expect(screen.queryByText('Guardado local · Pendiente de envío')).toBeNull();
+});
 it('replaces one photo, adds current coordinates and saves a complete local pending observation', async () => {
   const { capture, save } = await fixture();
   await fireEvent.press(

@@ -31,6 +31,20 @@ observación con foto y ubicación (AQU-263–266) están documentados en
 [Semana 2 — Franco](docs/sprint2-week2-franco.md), incluidos los límites de
 validación nativa y los adaptadores de integración.
 
+El cierre de las pantallas científicas, navegación y accesibilidad de Franco
+(AQU-275–278, AQU-290–291) se explica en la
+[Guía de uso y demostración del Sprint 2](docs/guia-demostracion-sprint2-franco.md).
+La demostración local es optativa y siempre está rotulada como sintética;
+las rutas científicas propuestas permanecen deshabilitadas por defecto.
+Las verificaciones físicas AQU-288–289 están
+[preparadas pero pendientes de Android](docs/verificacion-android-franco.md).
+La matriz de aceptación, las 296 pruebas y los límites de cierre están en
+[Cierre de Franco — Sprint 2](docs/cierre-franco-sprint2.md).
+
+La persistencia de borradores, recuperación, edición y eliminación con fotos
+(AQU-255–258 y AQU-267–270) está documentada en
+[Semanas 1 y 2 — Jose Jimenez](docs/sprint2-jose-semanas1-2.md).
+
 ## Comenzar
 
 Comprueba las herramientas antes de instalar:

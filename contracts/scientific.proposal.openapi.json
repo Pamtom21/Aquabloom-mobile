@@ -1,0 +1,138 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "AquaBloom scientific mobile proposal",
+    "version": "0.0.0-proposal",
+    "description": "Propuesta móvil para AQU-247/248. No es el contrato publicado por Web/API. Rutas relativas a /api/v1."
+  },
+  "paths": {
+    "/lakes/{lake_id}/estimates": {
+      "get": {
+        "operationId": "listLakeEstimates",
+        "parameters": [
+          {
+            "name": "lake_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resultados por punto del lago (propuesta)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EstimateListResponse"
+                }
+              }
+            }
+          },
+          "401": { "description": "Sesión no válida" },
+          "403": { "description": "Sin permiso de consulta" },
+          "404": { "description": "Lago inexistente" },
+          "503": { "description": "Servicio no disponible" }
+        }
+      }
+    },
+    "/scientific/jobs/{job_id}": {
+      "get": {
+        "operationId": "getScientificJob",
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Estado de un trabajo existente (propuesta)",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ScientificJob" }
+              }
+            }
+          },
+          "401": { "description": "Sesión no válida" },
+          "403": { "description": "Sin permiso de consulta" },
+          "404": { "description": "Trabajo inexistente" },
+          "503": { "description": "Servicio no disponible" }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "EstimatePoint": {
+        "type": "object",
+        "required": [
+          "id",
+          "lake_id",
+          "point_id",
+          "value",
+          "unit",
+          "variable",
+          "observed_at",
+          "status",
+          "warnings"
+        ],
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "lake_id": { "type": "string", "format": "uuid" },
+          "point_id": { "type": "string", "minLength": 1 },
+          "latitude": {
+            "type": ["number", "null"],
+            "minimum": -90,
+            "maximum": 90
+          },
+          "longitude": {
+            "type": ["number", "null"],
+            "minimum": -180,
+            "maximum": 180
+          },
+          "value": { "type": "number" },
+          "unit": { "type": "string", "minLength": 1 },
+          "variable": { "type": "string", "minLength": 1 },
+          "observed_at": { "type": "string", "format": "date-time" },
+          "status": { "type": "string", "minLength": 1 },
+          "scene_id": { "type": ["string", "null"] },
+          "model_id": { "type": ["string", "null"] },
+          "model_version": { "type": ["string", "null"] },
+          "dataset_id": { "type": ["string", "null"] },
+          "dataset_version": { "type": ["string", "null"] },
+          "warnings": { "type": "array", "items": { "type": "string" } }
+        }
+      },
+      "EstimateListResponse": {
+        "type": "object",
+        "required": ["items"],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/EstimatePoint" }
+          }
+        }
+      },
+      "ScientificJob": {
+        "type": "object",
+        "required": ["id", "status", "updated_at"],
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "status": {
+            "type": "string",
+            "enum": ["queued", "running", "completed", "failed", "cancelled"]
+          },
+          "updated_at": { "type": "string", "format": "date-time" },
+          "progress": {
+            "type": ["number", "null"],
+            "minimum": 0,
+            "maximum": 100
+          },
+          "error_message": { "type": ["string", "null"] }
+        }
+      }
+    }
+  }
+}

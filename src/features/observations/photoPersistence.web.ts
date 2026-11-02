@@ -4,4 +4,5 @@ export const photoPersistence: PhotoStorage = {
     throw new Error('La persistencia fotográfica requiere Android/iOS.');
   },
   async removeCreated() {},
+  async removeDraft() {},
 };
