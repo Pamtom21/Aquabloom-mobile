@@ -7,6 +7,18 @@ export default function RootLayout() {
     <AppProviders>
       <StatusBar style="dark" />
       <Stack>
+        <Stack.Screen
+          name="lakes/[id]/estimates/index"
+          options={{ title: 'Estimaciones del lago' }}
+        />
+        <Stack.Screen
+          name="lakes/[id]/estimates/[estimateId]"
+          options={{ title: 'Detalle de estimación' }}
+        />
+        <Stack.Screen
+          name="scientific/jobs/[jobId]"
+          options={{ title: 'Trabajo científico' }}
+        />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="login" options={{ title: 'Iniciar sesión' }} />
         <Stack.Screen

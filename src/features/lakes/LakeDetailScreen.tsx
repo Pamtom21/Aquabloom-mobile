@@ -38,6 +38,14 @@ export function LakeDetailScreen({ id }: { id: string }) {
           <Text>Estado: {lake.data.status}</Text>
           <Text>{lake.data.description || 'Sin descripción disponible.'}</Text>
           <AppButton
+            accessibilityHint="Consulta resultados, trazabilidad y límites científicos; la demostración se identifica por separado"
+            onPress={() =>
+              router.push({ pathname: '/lakes/[id]/estimates', params: { id } })
+            }
+          >
+            Estimaciones científicas
+          </AppButton>
+          <AppButton
             accessibilityHint="Abre un borrador de observación asociado a este lago"
             onPress={() =>
               router.push({
