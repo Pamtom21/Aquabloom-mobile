@@ -76,3 +76,27 @@ it('returns to an observation only for a strict internal lake UUID', () => {
     expect(loginDestination(path)).toBe('/');
   }
 });
+
+it('only accepts known scientific destinations with UUIDs, without query/open redirects', () => {
+  const id = '11111111-1111-4111-8111-111111111111';
+  expect(loginDestination(`/lakes/${id}/estimates`)).toEqual({
+    pathname: '/lakes/[id]/estimates',
+    params: { id },
+  });
+  expect(loginDestination(`/lakes/${id}/estimates/${id}`)).toEqual({
+    pathname: '/lakes/[id]/estimates/[estimateId]',
+    params: { id, estimateId: id },
+  });
+  expect(loginDestination(`/scientific/jobs/${id}`)).toEqual({
+    pathname: '/scientific/jobs/[jobId]',
+    params: { jobId: id },
+  });
+  for (const path of [
+    `/lakes/${id}/estimates?redirect=evil`,
+    `/lakes/${id}/estimates/invalid`,
+    '/scientific/jobs/invalid',
+    `//evil/scientific/jobs/${id}`,
+    `/scientific/jobs/${id}/extra`,
+  ])
+    expect(loginDestination(path)).toBe('/');
+});

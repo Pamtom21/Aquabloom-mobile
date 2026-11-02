@@ -18,7 +18,7 @@ export function EstimateScreen({
   demo?: string;
 }) {
   const source = scientificSource(demo);
-  const query = useEstimates(lakeId, source);
+  const query = useEstimates(isCatalogId(estimateId) ? lakeId : '', source);
   const estimate = query.data?.items.find(
     (item) => item.id.toLowerCase() === estimateId.toLowerCase(),
   );
